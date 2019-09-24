@@ -1,7 +1,6 @@
 {
   "name": "galaxy-client",
   "version": "0.1.0",
-  "main": "src/index.js",
   "files": [ "README.rst", "LICENSE.rst", "src/*" ],
   "scripts": {
     "serve": "vue-cli-service serve",
