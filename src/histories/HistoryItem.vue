@@ -22,9 +22,9 @@
 </template>
 
 <script>
-    import {HistoryDatasetAssociation, HistoryDatasetCollectionAssociation} from "@/galaxy/api/history_contents";
+    import {HistoryDatasetAssociation, HistoryDatasetCollectionAssociation} from "@/galaxy/src/api/history_contents";
     import HistoryItemFunctions from "./HistoryItemFunctions";
-    import EditableLabel from "@/galaxy/misc/EditableLabel";
+    import EditableLabel from "@/galaxy/src/misc/EditableLabel";
 
     export default {
         name: "HistoryItem",

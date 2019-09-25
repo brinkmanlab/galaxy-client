@@ -47,7 +47,7 @@
 </template>
 
 <script>
-    import { Genome } from "@/galaxy/api/genomes";
+    import { Genome } from "@/galaxy/src/api/genomes";
 
     export default {
         name: "ReferenceGenomes",

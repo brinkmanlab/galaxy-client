@@ -17,11 +17,11 @@
 </template>
 
 <script>
-    import { History } from "@/galaxy/api/histories";
-    import EditableLabel from "@/galaxy/misc/EditableLabel";
-    import HistoryFunctions from "@/galaxy/histories/HistoryFunctions"
-    import RemoveHistory from "@/galaxy/histories/HistoryFunctions/Remove";
-    import RenameHistory from "@/galaxy/histories/HistoryFunctions/Rename";
+    import { History } from "@/galaxy/src/api/histories";
+    import EditableLabel from "@/galaxy/src/misc/EditableLabel";
+    import HistoryFunctions from "@/galaxy/src/histories/HistoryFunctions"
+    import RemoveHistory from "@/galaxy/src/histories/HistoryFunctions/Remove";
+    import RenameHistory from "@/galaxy/src/histories/HistoryFunctions/Rename";
     export default {
         name: "History",
         components: {HistoryFunctions, RemoveHistory, RenameHistory, EditableLabel},

@@ -9,7 +9,7 @@
 <script>
     import RemoveHistoryItem from "./HistoryItemFunctions/Remove";
     import RenameHistoryItem from "./HistoryItemFunctions/Rename";
-    import HistoryItem from "@/galaxy/histories/HistoryItem";
+    import HistoryItem from "@/galaxy/src/histories/HistoryItem";
 
     export default {
         name: "HistoryItemFunctions",

@@ -25,9 +25,9 @@
 </template>
 
 <script>
-    import * as galaxy from "@/galaxy/";
+    import * as galaxy from "@/galaxy/src/";
     import History from "../histories/History";
-    import ErrorInfo from "@/galaxy/workflows/WorkflowInvocationFunctions/ErrorInfo";
+    import ErrorInfo from "@/galaxy/src/workflows/WorkflowInvocationFunctions/ErrorInfo";
     export default {
         name: "WorkflowInvocation",
         components: {

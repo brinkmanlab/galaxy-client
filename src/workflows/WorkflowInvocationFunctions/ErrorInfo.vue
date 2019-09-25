@@ -3,8 +3,8 @@
 </template-->
 
 <script>
-    import FunctionIcon from "@/galaxy/misc/FunctionIcon";
-    import WorkflowInvocation from "@/galaxy/workflows/WorkflowInvocation";
+    import FunctionIcon from "@/galaxy/src/misc/FunctionIcon";
+    import WorkflowInvocation from "@/galaxy/src/workflows/WorkflowInvocation";
 
     export default {
         extends: FunctionIcon,

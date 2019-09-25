@@ -4,7 +4,7 @@
 
 <script>
     import FunctionIcon from '../../misc/FunctionIcon';
-    import HistoryItem from "@/galaxy/histories/HistoryItem";
+    import HistoryItem from "@/galaxy/src/histories/HistoryItem";
     export default {
         extends: FunctionIcon,
         name: "Remove",

@@ -72,11 +72,11 @@
 </template>
 
 <script>
-    import { History } from "@/galaxy/api/histories";
-    import { HistoryDatasetAssociation } from "@/galaxy/api/history_contents";
+    import { History } from "@/galaxy/src/api/histories";
+    import { HistoryDatasetAssociation } from "@/galaxy/src/api/history_contents";
     import DatasetItem from './HistoryItems/Dataset';
     import CollectionItem from "./HistoryItems/Collection";
-    import FunctionIcon from "@/galaxy/misc/FunctionIcon";
+    import FunctionIcon from "@/galaxy/src/misc/FunctionIcon";
 
     const temporary_extension_to_datatype_map = {
         "genbank": "genbank", "gbk": "genbank", "embl": "embl", "gbff": "genbank"

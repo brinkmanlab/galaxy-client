@@ -3,8 +3,8 @@
 </template-->
 
 <script>
-    import FunctionIcon from "@/galaxy/misc/FunctionIcon";
-    import HistoryItem from "@/galaxy/histories/HistoryItem";
+    import FunctionIcon from "@/galaxy/src/misc/FunctionIcon";
+    import HistoryItem from "@/galaxy/src/histories/HistoryItem";
 
     export default {
         extends: FunctionIcon,
