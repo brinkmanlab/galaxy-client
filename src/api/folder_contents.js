@@ -1,5 +1,10 @@
+/**
+ * Code responsible for interacting with /api/folder_contents
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.folder_contents
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
-
 
 
 class Model extends Common.Model {
@@ -13,6 +18,11 @@ class Model extends Common.Model {
             //TODO fill in fields
         }
     }
+
+    // TODO GET /api/folders/{encoded_folder_id}/contents
+    // TODO POST /api/folders/{encoded_id}/contents
+    // TODO GET /api/folders/{encoded_folder_id}/
+    // TODO PUT /api/folders/{encoded_folder_id}/contents
 
     //Vuex ORM Axios Config
     static methodConf = {

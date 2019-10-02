@@ -1,9 +1,20 @@
+/**
+ * Code responsible for interacting with /api/users
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.users
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.authenticate
+ *
+ * Implements GET /api/authenticate/baseauth
+ * Implements GET /api/whoami
+ *
+ */
 import * as Common from "./_common";
 import axios from "axios";
 
-
-class Users extends Common.Model {
-    static entity = 'users';
+/**
+ * Model representing a Galaxy user
+ */
+class User extends Common.Model {
+    static entity = 'Users';
     static primaryKey = 'id';
 
     static fields() {
@@ -24,6 +35,11 @@ class Users extends Common.Model {
         }
     }
 
+    /**
+     * Get the model of the current user.
+     * This requires that a api key was already registered with axios for the request.
+     * @returns {Promise<User|null>}
+     */
     static async getCurrent() {
         let response = await this.$get({
             params: {
@@ -33,15 +49,22 @@ class Users extends Common.Model {
         return this.find(response.id);
     }
 
+    /**
+     * Register a user with the Galaxy backend
+     * @param username Username of the new user
+     * @param password Password for the new user
+     * @param email Email of the new user
+     * @returns {Promise<void>} null
+     */
     static async registerUser(username, password, email) {
-        // This is a total hack until user registration is enabled via the API
+        // TODO This is a total hack until user registration is enabled via the API
         const htmlconf = {...this.methodConf.http, responseType: 'text'};
-        let response = await axios.get('/root/login', htmlconf);
+        let response = await axios.get('/root/login', htmlconf); // Non-api endpoint :(
         let csrf = response.data.match(/"session_csrf_token": "(\w+)"/);
         if (!csrf || !csrf[1]) throw Error('CSRF token could not be found');
         csrf = csrf[1];
 
-        response = await axios.post('/user/create', {
+        response = await axios.post('/user/create', { // Non-api endpoint :(
             "disableCreate": true,
             "email": email,
             "password": password,
@@ -53,18 +76,29 @@ class Users extends Common.Model {
             "session_csrf_token": csrf,
             "isAdmin": false
         }, this.methodConf.http);
+
+        //TODO return user model
     }
 
-    //TODO add methods to operate on rest of users api
-    //GET /api/users/deleted Displays a collection (list) of deleted users.
-    //GET /api/users/deleted/{encoded_id}
-    //GET /api/users/{id}/information/inputs
-    //PUT /api/users/{id}/information/inputs
-    //GET /api/users/{id}/custom_builds
-    //PUT /api/users/{id}/custom_builds/{key}
-    //DELETE /api/users/{id}/custom_builds/{key}
+    // TODO GET /api/users/deleted Displays a collection (list) of deleted users.
+    // TODO GET /api/users/deleted/{encoded_id}
+    // TODO GET /api/users/{id}/information/inputs
+    // TODO PUT /api/users/{id}/information/inputs
+    // TODO GET /api/users/{id}/custom_builds
+    // TODO PUT /api/users/{id}/custom_builds/{key}
+    // TODO DELETE /api/users/{id}/custom_builds/{key}
+
+    // TODO GET /api/whoami
 
     //GET /api/authenticate/baseauth
+    /**
+     * Get the api key for a user.
+     * Uses the baseauth method of authenticating with Galaxy.
+     * @param username {string} Username of user
+     * @param password {string} Password for user
+     * @param method {string} Method to use to authenticate. Currently only default 'baseauth' is supported.
+     * @returns {Promise<string>} API key for user
+     */
     static async getAPIKey(username, password, method = 'baseauth') {
         let response;
         switch (method) {
@@ -75,6 +109,7 @@ class Users extends Common.Model {
                 });
                 return response.data.api_key;
             default:
+                // TODO When Galaxy adds more API authentication methods, implement here
                 throw Error(method + ' authentication method not implemented');
         }
     }
@@ -141,11 +176,11 @@ const Module = {
 };
 
 function register(database) {
-    database.register(Users, Module);
+    database.register(User, Module);
 }
 
 export {
-    Users,
+    User,
     Module,
     register,
 };

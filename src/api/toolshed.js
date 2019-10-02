@@ -1,5 +1,10 @@
+/**
+ * Code responsible for interacting with /api/toolshed
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.toolshed
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
-
 
 
 class Model extends Common.Model {
@@ -13,6 +18,14 @@ class Model extends Common.Model {
             //TODO fill in fields
         }
     }
+
+    // TODO GET /api/tool_shed_repositories/{id}/status
+    // TODO GET /api/tool_shed_repositories/shed_tool_json
+    // TODO GET /api/tool_shed/contents
+    // TODO GET /api/tool_shed/category
+    // TODO GET /api/tool_shed/repository
+    // TODO GET /api/tool_shed/search
+    // TODO GET /api/tool_shed/request
 
     //Vuex ORM Axios Config
     static methodConf = {

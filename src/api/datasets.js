@@ -1,4 +1,15 @@
+/**
+ * Code responsible for interacting with /api/datasets
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.datasets
+ * See history_contents.js for:
+ * GET /api/histories/{encoded_history_id}/contents/{encoded_content_id}/extra_files
+ * GET /api/histories/{encoded_history_id}/contents/{encoded_content_id}/display
+ * GET /api/histories/{history_id}/contents/{history_content_id}/metadata_file
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
+
 
 class Dataset extends Common.Model {
     static entity = 'Dataset';
@@ -45,6 +56,12 @@ class Dataset extends Common.Model {
             api_type: this.string("file"),
         }
     }
+
+    // TODO PUT /api/datasets/{encoded_dataset_id}/permissions
+    // TODO GET /api/datasets/{dataset_id}/converted/{ext}
+    // TODO GET /api/datasets/{dataset_id}/metrics
+    // TODO GET /api/datasets/{dataset_id}/parameters_display
+
 
     //Vuex ORM Axios Config
     static methodConf = {

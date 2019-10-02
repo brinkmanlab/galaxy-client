@@ -1,9 +1,14 @@
+/**
+ * Code responsible for interacting with /api/annotations
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.annotations
+ * TODO not implemented, no api endpoints provided
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
 
 
-
-class Model extends Common.Model {
-    static entity = 'annotations';
+class Annotation extends Common.Model {
+    static entity = 'Annotation';
     static primaryKey = 'id';
 
     static fields() {
@@ -76,11 +81,11 @@ const Module = {
 };
 
 function register(database) {
-    database.register(Model, Module);
+    database.register(Annotation, Module);
 }
 
 export {
-    Model,
+    Annotation,
     Module,
     register,
 };

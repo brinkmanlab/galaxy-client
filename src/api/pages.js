@@ -1,9 +1,15 @@
+/**
+ * Code responsible for interacting with /api/pages
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.pages
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.page_revisions
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
 
 
-
-class Model extends Common.Model {
-    static entity = 'pages';
+class Page extends Common.Model {
+    static entity = 'Page';
     static primaryKey = 'id';
 
     static fields() {
@@ -13,6 +19,9 @@ class Model extends Common.Model {
             //TODO fill in fields
         }
     }
+
+    // TODO GET /api/pages/{page_id}/revisions
+    // TODO POST /api/pages/{page_id}/revisions
 
     //Vuex ORM Axios Config
     static methodConf = {
@@ -76,11 +85,11 @@ const Module = {
 };
 
 function register(database) {
-    database.register(Model, Module);
+    database.register(Page, Module);
 }
 
 export {
-    Model,
+    Page,
     Module,
     register,
 };

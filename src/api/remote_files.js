@@ -1,5 +1,10 @@
+/**
+ * Code responsible for interacting with /api/remote_files
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.remote_files
+ * TODO not implemented, should this even have a model?
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
-
 
 
 class Model extends Common.Model {

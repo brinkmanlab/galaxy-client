@@ -1,5 +1,10 @@
+/**
+ * Code responsible for interacting with /api/dependency_resolvers
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.tool_dependencies
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
-
 
 
 class Model extends Common.Model {
@@ -13,6 +18,13 @@ class Model extends Common.Model {
             //TODO fill in fields
         }
     }
+
+    // TODO GET /api/dependency_resolvers/{index}/dependency
+    // TODO POST /api/dependency_resolvers/{index}/dependency
+    // TODO GET /api/dependency_resolvers/dependency
+    // TODO GET /api/dependency_resolvers/{index}/requirements
+    // TODO GET /api/dependency_resolvers/requirements
+    // TODO POST /api/dependency_resolvers/{index}/clean
 
     //Vuex ORM Axios Config
     static methodConf = {

@@ -1,5 +1,10 @@
+/**
+ * Code responsible for interacting with /api/item_tags
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.item_tags
+ * TODO not implemented, no api endpoints
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
-
 
 
 class Model extends Common.Model {

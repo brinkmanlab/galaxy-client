@@ -1,9 +1,14 @@
+/**
+ * Code responsible for interacting with /api/visualizations
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.visualizations
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
 
 
-
-class Model extends Common.Model {
-    static entity = 'visualizations';
+class Visualization extends Common.Model {
+    static entity = 'Visualization';
     static primaryKey = 'id';
 
     static fields() {
@@ -76,11 +81,11 @@ const Module = {
 };
 
 function register(database) {
-    database.register(Model, Module);
+    database.register(Visualization, Module);
 }
 
 export {
-    Model,
+    Visualization,
     Module,
     register,
 };

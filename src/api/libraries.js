@@ -1,9 +1,14 @@
+/**
+ * Code responsible for interacting with /api/libraries
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.libraries
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
 
 
-
-class Model extends Common.Model {
-    static entity = 'libraries';
+class Library extends Common.Model {
+    static entity = 'Library';
     static primaryKey = 'id';
 
     static fields() {
@@ -76,11 +81,11 @@ const Module = {
 };
 
 function register(database) {
-    database.register(Model, Module);
+    database.register(Library, Module);
 }
 
 export {
-    Model,
+    Library,
     Module,
     register,
 };

@@ -1,5 +1,10 @@
+/**
+ * Code responsible for interacting with /api/libraries/contents
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.library_contents
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
-
 
 
 class Model extends Common.Model {

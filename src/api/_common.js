@@ -1,3 +1,12 @@
+/**
+ * Code common to all Galaxy API models
+ *
+ * Every model should inherit Model and be registered with a module that extends Module.
+ */
+
+// TODO https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.display_applications
+// TODO https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.dynamic_tools
+
 import { Model as VuexModel } from '@vuex-orm/core';
 
 const HasState = {
@@ -24,6 +33,10 @@ const HasState = {
     }
 };
 
+
+/**
+ * Base class for API models
+ */
 class Model extends VuexModel {
 
     static fields() {
@@ -31,7 +44,13 @@ class Model extends VuexModel {
         }
     }
 
-    async post(fields, params = {}) {
+    /**
+     * Update model state on the Galaxy server. Wraps $update() with model instance params.
+     * @param fields {Array} Optional Array of strings containing field names to update
+     * @param options {Object} Options to pass to $update()
+     * @returns {Promise<Collections<Model>>} result of $update()
+     */
+    async post(fields, options={}) {
         let data = this;
         if (fields !== undefined) {
             //Only keep requested fields
@@ -42,16 +61,22 @@ class Model extends VuexModel {
         if (data.hasOwnProperty('$toJson')) data = data.$toJson();
         else data = JSON.stringify(data);
         return await this.constructor.$update({
+            ...options,
             params: {
                 id: this[this.constructor.primaryKey],
                 url: this.get_base_url(),
-                ...params,
+                ...options.params,
             },
             data: data,
         });
     }
 
     // TODO find all places this can be used and replace code
+    /**
+     * Update model state from Galaxy server. Wraps $get() with model instance params.
+     * @param options {Object} Options to pass to $get
+     * @returns {Promise<*>} result of $get()
+     */
     async reload(options={}) {
         return await this.constructor.$get({
             ...options,
@@ -63,6 +88,11 @@ class Model extends VuexModel {
         });
     }
 
+    /**
+     * Delete model on Galaxy server. Wraps $delete() with model instance params.
+     * @param options {Object} Options to pass to $delete()
+     * @returns {Promise<*>} result of $delete()
+     */
     async delete(options = {}) {
         this.stop_polling();
         if (this.hid === -1) {
@@ -71,7 +101,7 @@ class Model extends VuexModel {
             return;
         }
         this.constructor.delete(this.id); // TODO this shouldn't be needed, the next command calls it but fails
-        await this.constructor.$delete({
+        return await this.constructor.$delete({
             ...options,
             params: {
                 id: this[this.constructor.primaryKey],
@@ -80,11 +110,24 @@ class Model extends VuexModel {
         });
     }
 
+    /**
+     * Build base url for model instance specific api endpoint.
+     * Models that require other model information in their api url will override this function.
+     * @returns {string} Base url for model api endpoint
+     */
     get_base_url() {
         return '';
     }
 
-    start_polling(stop_criteria=null, options={}, interval=10000) {
+    /**
+     * Start requesting model updates at a specified interval.
+     * New update requests will not be created until the previous complete.
+     * Stores handles returned by setTimeout() in window.pollHandles as a Map.
+     * @param stop_criteria {CallableFunction} Callback to check if polling should stop. Return true to stop, false to continue.
+     * @param options {Object} Options to pass to reload()
+     * @param interval {Number} Delay in ms between request
+     */
+    start_polling(stop_criteria, options={}, interval=10000) {
         const self = this;
         if (!window.hasOwnProperty('pollHandles')) window.pollHandles = new Map();
         if (!window.pollHandles.has(this.id)) {
@@ -102,6 +145,9 @@ class Model extends VuexModel {
         }
     }
 
+    /**
+     * Stop requesting model updates regardless of any stop criteria passed to start_polling()
+     */
     stop_polling() {
         if (window.hasOwnProperty('pollHandles')) {
             const pollHandle = window.pollHandles.get(this.id);
@@ -112,27 +158,42 @@ class Model extends VuexModel {
         }
     }
 
+    /**
+     * Catch model delete hook and ensure polling is stopped.
+     * @param model {Model} model being deleted
+     */
     static beforeDelete(model) {
         model.stop_polling();
-        super.beforeDelete(model);
+        //VuexModel.beforeDelete(model); // TODO VuexModel.beforeDelete undefined
     }
 
     // TODO find all places this can be used and replace code
+    /**
+     * Find model with specified id, or get it from the Galaxy server
+     * @param id Model id
+     * @param url {string} Optional base url for model api
+     * @param options {Object} Options to pass to $get
+     * @returns {Promise<Model|null>} model instance if the id is found or null
+     */
     static async findOrLoad(id, url='', options={}) {
         const result = this.find(id);
         if (result) return result;
-        const option_params = 'params' in options ? options.params : {};
         await this.$get({
             ...options,
             params: {
                 id: id,
                 url: url,
-                ...option_params,
+                ...options.params,
             },
         });
         return this.find(id);
     }
 
+    /**
+     * Allow comparison of models. If the models have the same primary key then they are considered identical.
+     * @param obj Object to compare to
+     * @returns {boolean|Boolean} True if models share same primary key (id), False otherwise.
+     */
     is(obj) {
         if (obj.constructor.hasOwnProperty('primaryKey')) {
             //TODO are ids unique across Galaxy?
@@ -143,10 +204,19 @@ class Model extends VuexModel {
     }
 }
 
+/**
+ * Base module for all models
+ * @type {{namespaced: boolean}}
+ */
 const Module = {
     namespaced: true,
 };
 
+/**
+ * Base state wrapper for all modules
+ * @param state state to wrap
+ * @returns {function(): Object} returns wrapped state
+ */
 function State(state) {
     if (state instanceof Function) state = state();
     return ()=>{return {

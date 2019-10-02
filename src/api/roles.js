@@ -1,9 +1,14 @@
+/**
+ * Code responsible for interacting with /api/roles
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.roles
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
 
 
-
-class Model extends Common.Model {
-    static entity = 'roles';
+class Role extends Common.Model {
+    static entity = 'Role';
     static primaryKey = 'id';
 
     static fields() {
@@ -76,11 +81,11 @@ const Module = {
 };
 
 function register(database) {
-    database.register(Model, Module);
+    database.register(Role, Module);
 }
 
 export {
-    Model,
+    Role,
     Module,
     register,
 };

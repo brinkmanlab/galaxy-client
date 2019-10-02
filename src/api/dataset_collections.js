@@ -1,9 +1,13 @@
+/**
+ * Code responsible for interacting with /api/dataset_collections
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.dataset_collections
+ * TODO not implemented
+ */
 import * as Common from "./_common";
 
 
-
-class Model extends Common.Model {
-    static entity = 'dataset_collections';
+class DatasetCollection extends Common.Model {
+    static entity = 'DatasetCollection';
     static primaryKey = 'id';
 
     static fields() {
@@ -13,6 +17,8 @@ class Model extends Common.Model {
             //TODO fill in fields
         }
     }
+
+    // TODO POST /api/dataset_collections
 
     //Vuex ORM Axios Config
     static methodConf = {
@@ -76,11 +82,11 @@ const Module = {
 };
 
 function register(database) {
-    database.register(Model, Module);
+    database.register(DatasetCollection, Module);
 }
 
 export {
-    Model,
+    DatasetCollection,
     Module,
     register,
 };

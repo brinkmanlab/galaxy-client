@@ -1,9 +1,14 @@
+/**
+ * Code responsible for interacting with /api/quotas
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.quotas
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
 
 
-
-class Model extends Common.Model {
-    static entity = 'quotas';
+class Quota extends Common.Model {
+    static entity = 'Quota';
     static primaryKey = 'id';
 
     static fields() {
@@ -13,6 +18,10 @@ class Model extends Common.Model {
             //TODO fill in fields
         }
     }
+
+    // TODO GET /api/quotas/deleted
+    // TODO GET /api/quotas/deleted/{encoded_quota_id}
+    // TODO POST /api/quotas/deleted/{encoded_quota_id}/undelete
 
     //Vuex ORM Axios Config
     static methodConf = {
@@ -76,11 +85,11 @@ const Module = {
 };
 
 function register(database) {
-    database.register(Model, Module);
+    database.register(Quota, Module);
 }
 
 export {
-    Model,
+    Quota,
     Module,
     register,
 };

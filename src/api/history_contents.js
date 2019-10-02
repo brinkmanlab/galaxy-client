@@ -1,3 +1,7 @@
+/**
+ * Code responsible for interacting with /api/history_contents
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.history_contents
+ */
 import * as Common from "./_common";
 import { History } from './histories';
 import axios from "axios";
@@ -9,6 +13,7 @@ class HistoryDatasetAssociation extends Common.Model {
 
     constructor(...args) {
         super(...args);
+        // Add HasState mixin
         Object.assign(this, Common.HasState);
     }
 
@@ -70,24 +75,49 @@ class HistoryDatasetAssociation extends Common.Model {
         };
     }
 
+    // TODO GET /api/histories/{encoded_history_id}/contents/{encoded_content_id}/extra_files
+    // TODO GET /api/histories/{encoded_history_id}/contents/{encoded_content_id}/display
+    // TODO GET /api/histories/{history_id}/contents/{history_content_id}/metadata_file
+
+    /**
+     * Build base url for model instance specific api endpoint.
+     * @returns {string} Base url for model api endpoint
+     */
     get_base_url() {
         let history = this.history;
         if (!history) history = History.find(this.history_id);
         return history.contents_url;
     }
 
+    /**
+     * Generate object expected for workflow invocation
+     * @returns {{src: string, id: string}}
+     */
     toInput() {
         return {id: this.id, src: 'hda'};
     }
 
+    /**
+     * Delete this instance on the Galaxy server
+     * @param options {Object} options to pass to $delete()
+     * @returns {Promise<null|*>} Null if ghost instance or the result of $delete()
+     */
     async delete(options = {}) {
         this.deleted = true;
-        return super.delete({...options, params: {url: this.history.contents_url, ...options.params}});
+        return super.delete({...options, params: {url: this.get_base_url(), ...options.params}});
     }
 
-    //TODO move to Dataset, this was placed here because the api returns an hda object
     static waiting_uploads = []; // TODO switch to a promise pool library?
-    static async $upload(file, history_id, file_type = 'auto') { //eslint-disable-line
+
+    /**
+     * Upload file to server
+     * @param file {File} handle to file for upload
+     * @param history_id {string} ID of history to upload to
+     * @param file_type {string} Optional type of file, skips server side type sniff step
+     * @returns {Promise<HistoryDatasetAssociation>} Model representing uploaded dataset
+     */
+    static async $upload(file, history_id, file_type = 'auto') {
+        //TODO move to Dataset, this was placed here because the api returns an hda object
         // Create placeholder hda while uploading
         const tmp_id = file.name+Math.floor(Math.random()*10**16).toString();
         let ext = file.name.match(/[^.]+$/);
@@ -142,7 +172,7 @@ class HistoryDatasetAssociation extends Common.Model {
 
         // Initiate upload
         let response = await axios.post('/api/tools', formData, {
-            //...this.methodConf.http, TODO something in the config breaks this request, possibly a header?
+            //...this.methodConf.http, TODO something in the config breaks this request
             baseURL: this.methodConf.http.baseURL,
             headers: {
                 ...this.methodConf.http.headers,
@@ -162,15 +192,6 @@ class HistoryDatasetAssociation extends Common.Model {
         this.waiting_uploads.shift();
         resolve();
 
-        //let response = await Tool.$create({
-        //    /*http: {
-        //        headers: {'Content-Type': 'multipart/form-data'},
-        //        //...http,
-        //    },*/
-        //    data: formData,
-        //    //TODO transformResponse to extract HDA
-        //});
-
         // Update or replace placeholder hda
         if (response.status !== 200) {
             HistoryDatasetAssociation.update({
@@ -187,7 +208,7 @@ class HistoryDatasetAssociation extends Common.Model {
     //Vuex ORM Axios Config
     static methodConf = {
         http: {
-            url: ':url/datasets',
+            url: ':url/datasets', // TODO change from :url to full api path with :history_id
         },
         methods: {
             $fetch: {
@@ -262,19 +283,38 @@ class HistoryDatasetCollectionAssociation extends Common.Model {
         }
     }
 
+    /**
+     * Build base url for model instance specific api endpoint.
+     * @returns {string} Base url for model api endpoint
+     */
+    get_base_url() {
+        let history = this.history;
+        if (!history) history = History.find(this.history_id);
+        return history.get_contents_url();
+    }
+
+    /**
+     * Generate object expected for workflow invocation
+     * @returns {{src: string, id: string}}
+     */
     toInput() {
         return {id: this.id, src: 'hdca'};
     }
 
+    /**
+     * Delete this instance on the Galaxy server
+     * @param options {Object} options to pass to $delete()
+     * @returns {Promise<null|*>} Null if ghost instance or the result of $delete()
+     */
     async delete(options = {}) {
         this.deleted = true;
-        return super.delete({...options, params: {url: this.history.contents_url, ...options.params}});
+        return super.delete({...options, params: {url: this.get_base_url(), ...options.params}});
     }
 
     //Vuex ORM Axios Config
     static methodConf = {
         http: {
-            url: ':url/dataset_collections'
+            url: ':url/dataset_collections' // TODO change from :url to full api path with :history_id
         },
         methods: {
             $fetch: {

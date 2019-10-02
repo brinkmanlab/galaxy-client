@@ -1,9 +1,14 @@
+/**
+ * Code responsible for interacting with /api/groups
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.groups
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
 
 
-
-class Model extends Common.Model {
-    static entity = 'groups';
+class Group extends Common.Model {
+    static entity = 'Group';
     static primaryKey = 'id';
 
     static fields() {
@@ -76,11 +81,11 @@ const Module = {
 };
 
 function register(database) {
-    database.register(Model, Module);
+    database.register(Group, Module);
 }
 
 export {
-    Model,
+    Group,
     Module,
     register,
 };

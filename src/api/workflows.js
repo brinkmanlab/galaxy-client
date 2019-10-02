@@ -1,10 +1,17 @@
+/**
+ * Code responsible for interacting with /api/workflows
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.workflows
+ */
 import * as Common from "./_common";
-import {HistoryDatasetAssociation, HistoryDatasetCollectionAssociation } from "./history_contents";
+import { HistoryDatasetAssociation, HistoryDatasetCollectionAssociation } from "./history_contents";
 import { History } from "./histories";
 import { Job } from "./jobs";
 
 //const INPUT_STEP_TYPES = ['data_input', 'data_collection_input', 'parameter_input'];
 
+/**
+ * Model of a workflow invocation step
+ */
 class WorkflowInvocationStep extends Common.Model {
     static entity = 'WorkflowInvocationStep';
     static primaryKey = 'id';
@@ -34,6 +41,10 @@ class WorkflowInvocationStep extends Common.Model {
         }
     }
 
+    /**
+     * Count the number of states in jobs
+     * @returns {Object<Number>} Mapping of {state name: count, ...}
+     */
     states() {
         let tmp = {};
         if (!this.jobs.length) {
@@ -47,6 +58,10 @@ class WorkflowInvocationStep extends Common.Model {
         }, tmp);
     }
 
+    /**
+     * Helper to aggregate the overall state of a invocation.
+     * @returns {string} Name of current aggregate state
+     */
     aggregate_state() {
         if (this.state === "cancelled") return this.state;
         let states = this.states();
@@ -56,6 +71,10 @@ class WorkflowInvocationStep extends Common.Model {
         return "done";
     }
 
+    /**
+     * Helper to aggregate all step job errors.
+     * @returns {Promise<string>} Concatenation of the error output of all jobs with error state
+     */
     async get_error_log() {
         let log = '';
         //if (this.state !== 'error') return log;
@@ -124,6 +143,9 @@ class WorkflowInvocationStep extends Common.Model {
     }
 }*/
 
+/**
+ * Model of a workflow invocation
+ */
 class WorkflowInvocation extends Common.Model {
     static entity = 'WorkflowInvocation';
     static primaryKey = 'id';
@@ -152,12 +174,20 @@ class WorkflowInvocation extends Common.Model {
         }
     }
 
+    /**
+     * Overrides parent to attach workflow id to url
+     * @returns {string} api url for this model instance
+     */
     get_base_url() {
         let workflow = this.workflow;
         if (!workflow) workflow = StoredWorkflow.find(this.workflow_id);
-        return workflow.url;
+        return workflow.get_url();
     }
 
+    /**
+     * Count the number of states in steps
+     * @returns {Object<Number>} Mapping of state name to count
+     */
     states() {
         let tmp = {};
         if (!this.steps) {
@@ -173,6 +203,10 @@ class WorkflowInvocation extends Common.Model {
         }, tmp);
     }
 
+    /**
+     * Helper to aggregate the overall state of a invocation.
+     * @returns {string} Name of current aggregate state
+     */
     aggregate_state() {
         if (this.state === "cancelled") return this.state;
         let states = this.states();
@@ -182,6 +216,10 @@ class WorkflowInvocation extends Common.Model {
         return "done";
     }
 
+    /**
+     * Helper to aggregate all step job errors.
+     * @returns {Promise<string>} Concatenation of the error output of all jobs with error state
+     */
     async get_error_log() {
         let log = '';
         //if (this.state !== 'error') return log;
@@ -273,6 +311,9 @@ class WorkflowInvocation extends Common.Model {
     };
 }
 
+/**
+ * Model of a stored workflow
+ */
 class StoredWorkflow extends Common.Model {
     static entity = 'StoredWorkflow';
     static primaryKey = 'id';
@@ -308,10 +349,28 @@ class StoredWorkflow extends Common.Model {
 
     //TODO POST /api/workflows/{encoded_workflow_id}/invocations. Done in WorkflowInvocation $create?
 
+    /**
+     * Get appi endpoint without the global base url
+     * @returns {string} API URL for this instance
+     */
+    get_url() {
+        return this.url.replace(new RegExp('^' + this.constructor.methodConf.http.baseURL), ''); // Remove baseURL as it will be reattached later
+    }
+
+    /**
+     * Invoke the stored workflow
+     * @param inputs {Object<Object>} Mapping of workflow inputs keyed on step index
+     * @param history {History|undefined} Optional history to store invocation data, if undefined a new history will be created.
+     * @param label {string} If history is undefined, the created history will be assigned this label. If no label provided, the workflow name will be used.
+     * @returns {Promise<WorkflowInvocation|null>} Resulting workflow invocation model
+     */
     async invoke(inputs, history, label) {
         let response = null;
 
+        // Backfill label if not provided
         if (label === undefined) label = this.name;
+
+        // Create a new history if not provided
         if (history === undefined) {
             //Create history to store run
             try {
@@ -328,17 +387,21 @@ class StoredWorkflow extends Common.Model {
             if (!history) {
                 throw "Failed to create job history.";
             }
+
+            // Tag the new history with the workflow id for future lookup
             history.tags.push(this.id);
             history.post();
         }
 
+        // Create new collections before invocation
+        // TODO test if 'new_collection' as src will autogenerate a collection upon invocation
         for (const [index, input] of Object.entries(inputs)) {
             if (input.src === 'new_collection') {
                 //Create collection of inputs in new history
                 try {
                     response = await HistoryDatasetCollectionAssociation.$create({
                         params: {
-                            url: history.contents_url,
+                            url: history.get_contents_url(),
                         },
                         data: {
                             name: input.name,
@@ -356,13 +419,14 @@ class StoredWorkflow extends Common.Model {
             }
         }
 
+        // Invoke workflow
         try {
             response = await WorkflowInvocation.$create({
                 params: {
-                    url: this.url,
+                    url: this.get_url(),
                 },
                 data: {
-                    // new_history_name: specify a new history and leave history_id: null
+                    // new_history_name: specify a new history and leave history_id: null TODO if new_collection as src above works, swap history_id for this
                     history_id: history.id,
                     no_add_to_history: true,
                     inputs: inputs,
@@ -370,33 +434,43 @@ class StoredWorkflow extends Common.Model {
             });
             return WorkflowInvocation.find(response.id);
         } catch (e) {
+            // Invocation failed, cleanup.
             history.delete();
             throw "Failed to create job.";
         }
     }
 
+    /**
+     * Fetch all invocations, optionally filtering on a set of histories
+     * @param histories {Array<History>|undefined} Optional Array of histories to limit fetch
+     * @returns {Promise<Collection<WorkflowInvocation>>} Array of all invocations
+     */
     async fetch_invocations(histories) {
-        // Fetch each invocation individually by history id
         if (histories) {
+            // Fetch each invocation individually by history id
             await Promise.all(histories.map(history=>{
                 return WorkflowInvocation.$fetch({
-                    params: {url: this.url},
+                    params: {url: this.get_url()},
                     query: {view: "element", step_details: true, history_id: history.id}
                 })
             }));
         } else {
             await WorkflowInvocation.$fetch({
-                params: {url: this.url},
+                params: {url: this.get_url()},
                 query: {view: "element", step_details: true}
             });
         }
 
-        return this.get_invocations();
+        return this.get_invocations_query();
     }
 
-    get_invocations() {
+    /**
+     * Query currently loaded invocations
+     * @returns
+     */
+    get_invocations_query() {
         // TODO this.invocations should be reactive and not need this function
-        return WorkflowInvocation.query().has('history').with('history', q => q.where('deleted', false)).with('workflow').where('workflow_id', this.id).with('steps.jobs').get();
+        return WorkflowInvocation.query().where('workflow_id', this.id).whereHas('history', q => q.where('deleted', false)).with('history|workflow|steps.jobs');
     }
 
     //Vuex ORM Axios Config

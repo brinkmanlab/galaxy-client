@@ -1,5 +1,10 @@
+/**
+ * Code responsible for interacting with /api/tool_data
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.tool_data
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
-
 
 
 class TabularToolDataTable extends Common.Model {
@@ -13,6 +18,8 @@ class TabularToolDataTable extends Common.Model {
             //TODO fill in fields
         }
     }
+
+    // TODO GET /api/tool_data/<id>/fields/<value>
 
     //Vuex ORM Axios Config
     static methodConf = {

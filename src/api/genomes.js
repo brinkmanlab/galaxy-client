@@ -1,3 +1,7 @@
+/**
+ * Code responsible for interacting with /api/genomes
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.genomes
+ */
 import * as Common from "./_common";
 
 
@@ -12,6 +16,9 @@ class Genome extends Common.Model {
             name: this.string(null).nullable(),
         }
     }
+
+    // TODO GET /api/genomes/{id}/indexes?type={table name}
+    // TODO GET /api/genomes/{id}/sequences
 
     //Vuex ORM Axios Config
     static methodConf = {

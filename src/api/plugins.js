@@ -1,9 +1,14 @@
+/**
+ * Code responsible for interacting with /api/plugins
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.plugins
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
 
 
-
-class Model extends Common.Model {
-    static entity = 'plugins';
+class Plugin extends Common.Model {
+    static entity = 'Plugin';
     static primaryKey = 'id';
 
     static fields() {
@@ -76,11 +81,11 @@ const Module = {
 };
 
 function register(database) {
-    database.register(Model, Module);
+    database.register(Plugin, Module);
 }
 
 export {
-    Model,
+    Plugin,
     Module,
     register,
 };

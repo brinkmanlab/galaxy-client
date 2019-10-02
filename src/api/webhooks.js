@@ -1,5 +1,10 @@
+/**
+ * Code responsible for interacting with /api/webhooks
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.webhooks
+ * TODO not implemented, should this even have a model?
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
-
 
 
 class Model extends Common.Model {
@@ -13,6 +18,8 @@ class Model extends Common.Model {
             //TODO fill in fields
         }
     }
+
+    // TODO GET /api/webhooks/{webhook_id}/data/{params}
 
     //Vuex ORM Axios Config
     static methodConf = {

@@ -1,5 +1,10 @@
+/**
+ * Code responsible for interacting with /api/extended_metadata
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.extended_metadata
+ * TODO not implemented, no api endpoints
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
-
 
 
 class Model extends Common.Model {

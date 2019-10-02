@@ -1,5 +1,12 @@
+/**
+ * Code responsible for interacting with /api/tools
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.tools
+ */
 import * as Common from "./_common";
 
+/**
+ * Model representing a Section in Galaxies tool list
+ */
 class ToolSection extends Common.Model {
     static entity = 'ToolSection';
     static primaryKey = 'id';
@@ -61,6 +68,9 @@ class ToolSection extends Common.Model {
     }
 }
 
+/**
+ * Model representing an installed Galaxy tool
+ */
 class Tool extends Common.Model {
     static entity = 'Tool';
     static primaryKey = 'id';

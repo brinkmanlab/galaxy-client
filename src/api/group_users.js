@@ -1,5 +1,10 @@
+/**
+ * Code responsible for interacting with /api/group_users
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.group_users
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
-
 
 
 class Model extends Common.Model {
@@ -13,6 +18,11 @@ class Model extends Common.Model {
             //TODO fill in fields
         }
     }
+
+    // TODO GET /api/groups/{encoded_group_id}/users
+    // TODO GET /api/groups/{encoded_group_id}/users/{encoded_user_id}
+    // TODO PUT /api/groups/{encoded_group_id}/users/{encoded_user_id}
+    // TODO DELETE /api/groups/{encoded_group_id}/users/{encoded_user_id}
 
     //Vuex ORM Axios Config
     static methodConf = {

@@ -1,9 +1,14 @@
+/**
+ * Code responsible for interacting with /api/folders
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.folders
+ * TODO not implemented
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
 
 
-
-class Model extends Common.Model {
-    static entity = 'folders';
+class Folder extends Common.Model {
+    static entity = 'Folder';
     static primaryKey = 'id';
 
     static fields() {
@@ -13,6 +18,14 @@ class Model extends Common.Model {
             //TODO fill in fields
         }
     }
+
+    // TODO GET /api/folders/
+    // TODO GET /api/folders/{encoded_folder_id}
+    // TODO POST /api/folders/{encoded_parent_folder_id}
+    // TODO GET /api/folders/{id}/permissions
+    // TODO POST /api/folders/{encoded_folder_id}/permissions
+    // TODO DELETE /api/folders/{encoded_folder_id}
+    // TODO PATCH /api/folders/{encoded_folder_id}
 
     //Vuex ORM Axios Config
     static methodConf = {

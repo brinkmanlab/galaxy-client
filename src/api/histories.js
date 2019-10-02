@@ -1,3 +1,7 @@
+/**
+ * Code responsible for interacting with /api/histories
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.histories
+ */
 import * as Common from "./_common";
 
 import { HistoryDatasetAssociation, HistoryDatasetCollectionAssociation } from "./history_contents"; //eslint-disable-line
@@ -78,6 +82,10 @@ class History extends Common.Model {
     //TODO GET /api/histories/{id}/custom_builds_metadata
     //TODO PUT /api/histories/{id}/exports
     //TODO GET /api/histories/{id}/exports/{jeha_id}
+
+    get_contents_url() {
+        return this.contents_url.replace(new RegExp('^' + this.constructor.methodConf.http.baseURL), ''); // Remove baseURL as it will be reattached later
+    }
 
     async fileUpload(file, file_type) {
         if (file.kind) {

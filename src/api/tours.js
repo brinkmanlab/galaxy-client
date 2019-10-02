@@ -1,5 +1,10 @@
+/**
+ * Code responsible for interacting with /api/tours
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.tours
+ * TODO not implemented, should this even have a model?
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
-
 
 
 class Model extends Common.Model {

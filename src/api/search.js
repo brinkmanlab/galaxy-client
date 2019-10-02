@@ -1,5 +1,10 @@
+/**
+ * Code responsible for interacting with /api/search
+ * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.search
+ * TODO not implemented, this definitely shouldn't have a model. This file is just a placeholder.
+ */
+throw Error('Not Implemented');
 import * as Common from "./_common";
-
 
 
 class Model extends Common.Model {
