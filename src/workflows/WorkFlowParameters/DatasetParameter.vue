@@ -129,14 +129,14 @@
             },
             checkValidity() {
                 for (const model of this.selected_models) {
-                    if (model.state !== 'ok') return false;
+                    if (!model.ready()) return false;
                 }
                 if (this.optional && !this.selection) return true;
                 return this.validator(this.selection) === '' && this.validation_message === '';
             },
             reportValidity() {
                 for (const model of this.selected_models) {
-                    if (model.state !== 'ok') {
+                    if (!model.ready()) {
                         this.validation_message = "Some selected datasets are not ready for analysis. Please wait or make a different selection.";
                         return false;
                     }

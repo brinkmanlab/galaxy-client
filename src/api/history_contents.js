@@ -10,6 +10,7 @@ class HistoryDatasetAssociation extends Common.Model {
     static entity = 'HistoryDatasetAssociation';
     static primaryKey = 'id';
     static end_states = ['ok', 'error'];
+    static ready_states = ['ok', 'queued'];
 
     constructor(...args) {
         super(...args);
@@ -86,7 +87,15 @@ class HistoryDatasetAssociation extends Common.Model {
     get_base_url() {
         let history = this.history;
         if (!history) history = History.find(this.history_id);
-        return history.contents_url;
+        return history.get_contents_url();
+    }
+
+    /**
+      * Helper to check the 'readyness' of the dataset for use in a workflow or tool invocation
+      * @returns {boolean} True if ready, False otherwise.
+     */
+    ready() {
+        return this.constructor.ready_states.includes(this.state);
     }
 
     /**
