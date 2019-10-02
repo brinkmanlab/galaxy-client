@@ -79,12 +79,12 @@
             },
             clearSelected() { this.$refs.table.clearSelected(); this.$emit('input', ''); },
             filterFunc(row, filter) {
-                return row.name.includes(filter);
+                return row.name.toLowerCase().includes(filter);
             },
             update_filter(filter) {
                 // Delay the filter slightly to reduce lag and allow the user to continue typing
                 if (this.filter_delay_handle !== null) window.clearTimeout(this.filter_delay_handle);
-                this.filter_delay_handle = window.setTimeout(t=>t.filter = filter, this.filter_delay, this);
+                this.filter_delay_handle = window.setTimeout(t=>t.filter = filter.toLowerCase(), this.filter_delay, this);
             }
         },
         computed: {
