@@ -83,7 +83,7 @@
                         let hda = galaxy.history_contents.HistoryDatasetAssociation.find(this.model.outputs[key].id);
                         if (hda) result[key] = hda;
                         else {
-                            await galaxy.history_contents.HistoryDatasetAssociation.$get({params:{url: this.model.history.contents_url, id: this.model.outputs[key].id}});
+                            await galaxy.history_contents.HistoryDatasetAssociation.$get({params:{url: this.model.history.get_contents_url(), id: this.model.outputs[key].id}});
                             hda = galaxy.history_contents.HistoryDatasetAssociation.find(this.model.outputs[key].id);
                             result[key] = hda;
                             if (!hda.constructor.end_states.includes(hda.state)) {
