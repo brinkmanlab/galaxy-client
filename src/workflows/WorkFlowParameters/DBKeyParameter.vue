@@ -39,8 +39,8 @@
         }},
         methods: {
             onInput(value) {
-                this.selection = value;
-                this.$emit('input', value);
+                this.selection = value.id;
+                this.$emit('input', value.id);
             },
             setCustomValidity(message){
                 /* Sets a custom validity message for the element. If this message is not the empty string,
