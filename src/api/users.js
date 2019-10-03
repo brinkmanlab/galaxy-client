@@ -57,7 +57,7 @@ class User extends Common.Model {
      * @returns {Promise<void>} null
      */
     static async registerUser(username, password, email) {
-        // TODO This is a total hack until user registration is enabled via the API
+        /*// TODO This is a total hack until user registration is enabled via the API
         const htmlconf = {...this.methodConf.http, responseType: 'text'};
         let response = await axios.get('/root/login', htmlconf); // Non-api endpoint :(
         let csrf = response.data.match(/"session_csrf_token": "(\w+)"/);
@@ -75,7 +75,15 @@ class User extends Common.Model {
             "messageVariant": "danger",
             "session_csrf_token": csrf,
             "isAdmin": false
-        }, this.methodConf.http);
+        }, this.methodConf.http);*/
+        // TODO This requires patching galaxy/webapps/galaxy/api/users.py#UserAPIController.create to enable anyone to create a user
+        await this.$create({
+           data: {
+               username,
+               password,
+               email,
+           }
+        });
 
         //TODO return user model
     }
