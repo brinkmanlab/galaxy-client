@@ -178,8 +178,8 @@
                         // TODO handle specifying extension elsewhere
                         // TODO hardcoded extension mapping to avoid sniff for now
                         let ext = file.name.match(/[^.]+$/);
-                        /*if (ext && temporary_extension_to_datatype_map.hasOwnProperty(ext[0])) self.model.fileUpload(file, temporary_extension_to_datatype_map[ext[0]]);
-                        else*/ self.model.fileUpload(file);
+                        if (ext && temporary_extension_to_datatype_map.hasOwnProperty(ext[0])) self.model.fileUpload(file, temporary_extension_to_datatype_map[ext[0]]);
+                        else self.model.fileUpload(file);
                     }},
                 });
             },
