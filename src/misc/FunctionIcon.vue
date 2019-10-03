@@ -1,5 +1,5 @@
 <template>
-    <b-link class="galaxy-function" v-bind:title="description" @click.stop.prevent="$props.action" href="">
+    <b-link class="galaxy-function" v-bind:title="description" @click.stop.prevent="do_action" href="">
         <i class="galaxy-function-icon" v-bind:class="icon"></i>
         {{label}}
     </b-link>
@@ -26,6 +26,11 @@
                 required: true,
             }
         },
+        methods: {
+            do_action() {
+                this.action.call(this); // Call action setting 'this' to this component
+            }
+        }
     }
 </script>
 

@@ -30,7 +30,7 @@
                 required: false,
                 default() {
                     this.item.model.delete();
-                    //this.$emit('galaxy-history-item-deleted', this.item.model); TODO 'this' is not a Vue component for some reason
+                    this.$emit('galaxy-history-item-deleted', this.item.model);
                 },
             },
         },

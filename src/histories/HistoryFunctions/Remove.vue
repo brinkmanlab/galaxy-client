@@ -28,9 +28,8 @@
             action: {
                 type: Function,
                 default() {
-                    this.item.model.deleted = true;
                     this.item.model.delete();
-                    //this.$emit('galaxy-history-deleted', this.item.model); TODO 'this' is not the button Vue object
+                    this.$emit('galaxy-history-deleted', this.item.model);
                 },
             },
         },

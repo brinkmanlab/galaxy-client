@@ -152,7 +152,6 @@
                 const accepted_files = [];
                 for (const file of files) {
                     let ext = file.name.match(/[^.]+$/);
-                    console.log(ext);
                     if (this.accepted_upload_types.length && !(ext && this.accepted_upload_types.includes(ext[0]))) {
                         let tmp_id = file.name + Math.floor(Math.random() * 10 ** 16).toString();
                         HistoryDatasetAssociation.insert({

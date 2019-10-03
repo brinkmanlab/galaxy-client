@@ -108,7 +108,7 @@
             },
             onInput(value) {
                 for (const [index, input] of Object.entries(value)) {
-                    if (input.subinput) {
+                    if (input && input.subinput) {
                         // TODO remove when Galaxy optional workflow inputs implemented
                         // nest subinput under input for later processing
                         if (!this.inputs[index]) {
