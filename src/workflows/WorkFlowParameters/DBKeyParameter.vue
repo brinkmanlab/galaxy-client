@@ -39,6 +39,11 @@
         }},
         methods: {
             onInput(value) {
+                if (!value) {
+                    this.selection = '';
+                    this.$emit('input', '');
+                    return;
+                }
                 this.selection = value.id;
                 this.$emit('input', value.id);
             },

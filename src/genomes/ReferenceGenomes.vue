@@ -75,9 +75,9 @@
                 if (list.length)
                     this.$emit('input', list[0]);
                 else
-                    this.$emit('input', '');
+                    this.$emit('input', null);
             },
-            clearSelected() { this.$refs.table.clearSelected(); this.$emit('input', ''); },
+            clearSelected() { this.$refs.table.clearSelected(); this.$emit('input', null); },
             filterFunc(row, filter) {
                 return row.name.toLowerCase().includes(filter);
             },
