@@ -9,9 +9,11 @@
 </template>
 
 <script>
-    //import * as galaxy from '@/galaxy';
     import HistoryItem from "../HistoryItem";
 
+    /**
+     * History Dataset
+     */
     export default {
         extends: HistoryItem,
         name: "Dataset",

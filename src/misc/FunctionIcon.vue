@@ -6,21 +6,40 @@
 </template>
 
 <script>
+    /**
+     * Base component for all icon buttons
+     */
     export default {
         name: "FunctionIcon",
         props: {
+            /**
+             * CSS class targeting intended font-awesome icon
+             */
             icon: {
                 type: String,
                 default: '',
             },
+
+            /**
+             * Label to show with icon
+             */
             label: {
                 type: String,
                 default: '',
             },
+
+            /**
+             * Tooltip description of button
+             */
             description: {
                 type: String,
                 default: '',
             },
+
+            /**
+             * Callback when user clicks button
+             * 'this' is bound to the button Vue instance
+             */
             action: {
                 type: Function,
                 required: true,

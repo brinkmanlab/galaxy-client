@@ -17,6 +17,9 @@
     import HistoryItemFunctions from "../HistoryItemFunctions";
     import RemoveHistoryItem from "../HistoryItemFunctions/Remove";
 
+    /**
+     * History Collection
+     */
     export default {
         extends: HistoryItem,
         name: "Collection",

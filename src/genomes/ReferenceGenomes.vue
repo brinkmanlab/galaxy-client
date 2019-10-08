@@ -49,17 +49,32 @@
 <script>
     import { Genome } from "@/galaxy/src/api/genomes";
 
+    /**
+     * Selectable list of reference genomes available from /api/genomes
+     */
     export default {
         name: "ReferenceGenomes",
         props: {
+            /**
+             * Number to list per page
+             */
             perPage: {
                 type: Number,
                 default: 10,
             },
+
+            /**
+             * Initial selected genome
+             * @model
+             */
             value: {
                 type: String,
                 default: '',
             },
+
+            /**
+             * Delay in ms to wait for user to stop typing before applying filter
+             */
             filter_delay: {
                 type: Number,
                 default: 500,
@@ -71,16 +86,40 @@
             filter_delay_handle: null,
         }},
         methods: {
+            /**
+             * Translate row selection event of b-table to input event
+             * Only emits first selected genome
+             * @param list {Array<Genome>} Selected genomes
+             */
             row_selected(list) {
                 if (list.length)
                     this.$emit('input', list[0]);
                 else
                     this.$emit('input', null);
             },
+
+            /**
+             * Clear selection
+             * @public
+             */
             clearSelected() { this.$refs.table.clearSelected(); this.$emit('input', null); },
+
+            /**
+             * Filter function used by b-table
+             * @param row {Genome} row being evaluated for filtering
+             * @param filter {string} Filter string provided to b-table
+             * @returns {boolean} True to display row, False otherwise
+             */
             filterFunc(row, filter) {
-                return row.name.toLowerCase().includes(filter);
+                return row.name.toLowerCase().includes(filter); // Case insensitive search
             },
+
+            /**
+             * Handle user filter input event
+             * Updates table after a delay, without a delay it updates on each keypress
+             * causing performance issues when there are a lot of genomes.
+             * @param filter {string} filter criteria
+             */
             update_filter(filter) {
                 // Delay the filter slightly to reduce lag and allow the user to continue typing
                 if (this.filter_delay_handle !== null) window.clearTimeout(this.filter_delay_handle);
@@ -88,14 +127,26 @@
             }
         },
         computed: {
+            /**
+             * Total number of rows
+             * @returns {Number} Number of rows
+             */
             totalRows() {
                 return this.genomes.length;
             },
+
+            /**
+             * Loading state of genomes
+             * @returns {boolean} True if loading, False otherwise
+             */
             isLoading() {
                 return this.genomes.length === 0;
             }
         },
         asyncComputed: {
+            /**
+             * List of genomes
+             */
             genomes: {
                 async get() {
                     let genomes = Genome.all();
@@ -111,6 +162,7 @@
         },
         mounted() {
             if (this.value) {
+                // Select the initial value in the b-table
                 for (const [index, genome] of this.genomes().elements()) {
                     if (this.value === genome.id) {
                         this.$refs.table.selectRow(index);

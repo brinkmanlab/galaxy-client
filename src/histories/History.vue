@@ -22,10 +22,17 @@
     import HistoryFunctions from "@/galaxy/src/histories/HistoryFunctions"
     import RemoveHistory from "@/galaxy/src/histories/HistoryFunctions/Remove";
     import RenameHistory from "@/galaxy/src/histories/HistoryFunctions/Rename";
+
+    /**
+     * History
+     */
     export default {
         name: "History",
         components: {HistoryFunctions, RemoveHistory, RenameHistory, EditableLabel},
         props: {
+            /**
+             * History model instance
+             */
             model: {
                 type: History,
                 required: true,
@@ -35,6 +42,10 @@
             self: this,
         }},
         methods: {
+            /**
+             * Handle input from editable label
+             * @param value {string} New label value
+             */
             update_label(value) {
                 this.model.name = value;
                 this.model.post(['name']);
@@ -42,6 +53,7 @@
         },
         mounted() {
             const self = this;
+            // Poll state if pending items
             this.model.poll_state(()=>{self.$emit('history-completed', self); return true;});
         },
         beforeDestroy() {

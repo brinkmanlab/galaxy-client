@@ -16,17 +16,33 @@
 </template>
 
 <script>
+
+    /**
+     * Editable label
+     * Provides a text input in place of a label when activated
+     */
     export default {
         name: "EditableLabel",
         props: {
+            /**
+             * Label value
+             */
             value: {
                 type: String,
                 required: true,
             },
+
+            /**
+             * Placeholder text while editing
+             */
             placeholder: {
                 type: String,
                 default: '',
             },
+
+            /**
+             * Label validation regex
+             */
             pattern: {
                 type: String,
                 default: '.+',
@@ -36,17 +52,34 @@
             edited_label: null,
         }},
         methods: {
+            /**
+             * Show label editor
+             * @public
+             */
             start_edit() {
                 this.edited_label = this.value;
                 this.$nextTick(()=>{
                     this.$refs.editbox.focus();
                     this.$refs.editbox.select();
-                })
+                });
             },
+
+            /**
+             * Hide label editor and commit changes
+             * @public
+             */
             stop_edit() {
                 if (this.edited_label !== null) {
-                    this.$emit('update', this.edited_label);
+                    this.$emit('update', this.edited_label); // TODO change to input to support v-model
                 }
+                this.edited_label = null;
+            },
+
+            /**
+             * Hide label editor and discard changes
+             * @public
+             */
+            cancel_edit() {
                 this.edited_label = null;
             },
         },

@@ -26,6 +26,8 @@
     import DBKeyParameter from "./WorkFlowParameters/DBKeyParameter";
     import SimpleParameter from "./WorkFlowParameters/SimpleParameter";
 
+    // TODO See https://vuejs.org/v2/guide/components-edge-cases.html#Dependency-Injection for better? alternative of superset of props
+
     export default {
         name: "WorkflowParameter",
         components: {

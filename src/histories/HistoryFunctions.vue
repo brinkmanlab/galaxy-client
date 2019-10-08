@@ -5,11 +5,18 @@
 </template>
 
 <script>
+    import History from "@/galaxy/src/histories/History";
+    /**
+     * Container component for History function buttons
+     */
     export default {
         name: "HistoryFunctions",
         props: {
+            /**
+             * History Vue instance
+             */
             item: {
-                type: Object,
+                type: History,
                 required: true,
             },
 

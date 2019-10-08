@@ -86,7 +86,7 @@
                             if (param.subinputs && param.subinputs.length) {
                                 let i = 0;
                                 for (; i < param.subinputs.length - 1; ++i) {
-                                    inputs.push({...param, ...param.subinputs[i]})
+                                    inputs.push({...param, ...param.subinputs[i]});
                                 }
                                 Object.assign(param, param.subinputs[i]);
                             }

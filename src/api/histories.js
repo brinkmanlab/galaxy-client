@@ -83,10 +83,20 @@ class History extends Common.Model {
     //TODO PUT /api/histories/{id}/exports
     //TODO GET /api/histories/{id}/exports/{jeha_id}
 
+    /**
+     * Getter for contents url
+     * @returns {string} URL for history contents with base url removed
+     */
     get_contents_url() {
         return this.contents_url.replace(new RegExp('^' + this.constructor.methodConf.http.baseURL), ''); // Remove baseURL as it will be reattached later
     }
 
+    /**
+     * Upload a file to this history
+     * @param file {File} File to upload
+     * @param file_type {string} Optional file type to skip sniffing
+     * @returns {Promise<HistoryDatasetAssociation>} HDA model of uploaded dataset
+     */
     async fileUpload(file, file_type) {
         if (file.kind) {
             // Use DataTransferItemList interface to access the file(s)

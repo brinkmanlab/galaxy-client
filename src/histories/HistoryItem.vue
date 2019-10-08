@@ -26,6 +26,9 @@
     import HistoryItemFunctions from "./HistoryItemFunctions";
     import EditableLabel from "@/galaxy/src/misc/EditableLabel";
 
+    /**
+     * Base component for history items
+     */
     export default {
         name: "HistoryItem",
         components: {
@@ -35,12 +38,19 @@
         data: ()=>{return{
         }},
         props: {
+            /**
+             * Model of history item
+             */
             model: {
                 type: [HistoryDatasetAssociation, HistoryDatasetCollectionAssociation],
                 required: true,
             },
         },
         computed: {
+            /**
+             * Helper to translate state to readable message
+             * @returns {string|null} Human readable message of the working state
+             */
             working() {
                 // TODO add other unready states
                 if (this.model.file_ext === 'auto') return "Verifying data type";
@@ -49,7 +59,11 @@
             }
         },
         methods: {
-            update_label(evt, value) {
+            /**
+             * Handle input from editable label
+             * @param value {string} New label value
+             */
+            update_label(value) {
                 this.model.name = value;
                 this.model.post(['name']);
             }

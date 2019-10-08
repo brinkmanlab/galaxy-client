@@ -23,26 +23,50 @@
 
 <script>
     import HistoryContents from "../../histories/HistoryContents";
+
+    /**
+     * Workflow dataset/collection parameter
+     * Allows user to select one or more datasets or collections for a workflow input
+     */
     export default {
         name: "DatasetParameter",
         components: { HistoryContents },
         props: {
+            /**
+             * Input type as returned by the api
+             */
             type: {
                 type: String,
                 required: true,
             },
+
+            /**
+             * Input label
+             */
             label: {
                 type: String,
                 required: true,
             },
+
+            /**
+             * Input annotation
+             */
             annotation: {
                 type: String,
                 default: '',
             },
+
+            /**
+             * Asynchronously loaded history model
+             */
             historyPromise: {
                 type: Promise,
                 required: true,
             },
+
+            /**
+             *
+             */
             value: {
                 type: Array,
                 default(){return []},

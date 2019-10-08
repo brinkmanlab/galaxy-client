@@ -82,6 +82,9 @@
         "genbank": "genbank", "gbk": "genbank", "embl": "embl", "gbff": "genbank"
     };
 
+    /**
+     * History contents list
+     */
     export default {
         name: "HistoryContents",
         components: {
@@ -90,18 +93,36 @@
             DatasetItem,
         },
         props: {
+            /**
+             * Asynchronously loaded history model
+             */
             historyPromise: {
                 type: Promise,
                 required: true,
             },
+
+            /**
+             * Filter callback
+             * Takes a parameter of either a HistoryDatasetAssociation or a HistoryDatasetCollectionAssociation
+             * Returns true to display the item, false otherwise
+             */
             filter: {
                 type: Function,
                 default: ()=>true,
             },
+
+            /**
+             * Initial selected items
+             * @model
+             */
             value: {
                 type: Array,
                 default() { return [] },
             },
+
+            /**
+             * Array of file extensions to allow uploading.
+             */
             accepted_upload_types: {
                 type: Array,
                 default() { return [] },
@@ -115,6 +136,10 @@
             model() { return this.historyPromise },
         },
         computed: {
+            /**
+             * Aggregate all history items, filter, sort, and transform for b-table
+             * @returns {Array<{'item': (HistoryDatasetAssociation|HistoryDatasetCollectionAssociation), 'hid': Number, 'key': string}>}
+             */
             items() {
                 if (this.model === null || this.upload_dragging) return [];
                 //TODO when features available replace concat with v-for..of or model.morphTo(element property)
@@ -125,11 +150,21 @@
                     .sort((a,b)=>(a.hid === 0)?-1:b.hid-a.hid)
                     .reduce((acc, cur)=>{acc.push({item: cur, hid: cur.hid, key: cur.id}); return acc;}, []);
             },
+
+            /**
+             * Asset loading state
+             */
             isLoading() {
                 return this.model === null;
             }
         },
         methods: {
+            /**
+             * Filter function used by b-table
+             * @param row {{item: HistoryDatasetAssociation|HistoryDatasetCollectionAssociation, hid: Number, key: string}} row being evaluated for filtering
+             * @param filter {string} Filter string provided to b-table
+             * @returns {boolean} True to display row, False otherwise
+             */
             filterFunc(row, filter) {
                 if (typeof filter === "string")
                     return row.item.hid.toString().includes(filter) || row.item.name.includes(filter);
@@ -137,12 +172,22 @@
                     return filter.test(row.item.hid.toString()) || filter.test(row.item.name);
                 return true;
             },
+
+            /**
+             * Open the browser file selection dialog
+             * @public
+             */
             show_upload() {
                 this.$refs.upload.click();
             },
             onInput(items) {
                 this.$emit('input', items.map(item=>item.item));
             },
+
+            /**
+             * Handle upload events
+             * @param {Event} The browser event
+             */
             uploadHandler(evt) {
                 this.upload_dragging=false;
                 if (this.model === null) return; //If user tries to upload before finished loading, do nothing.
@@ -183,7 +228,12 @@
                     }},
                 });
             },
-            clearSelected() { this.$refs.table.clearSelected(); /*this.$emit('input', this.items.map(item=>item.item))*/},
+
+            /**
+             *  Clear selection
+             *  @public
+             */
+            clearSelected() { this.$refs.table.clearSelected(); },
         },
         mounted() {
             if (this.value.length) {

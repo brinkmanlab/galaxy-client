@@ -6,26 +6,49 @@
     import FunctionIcon from "@/galaxy/src/misc/FunctionIcon";
     import WorkflowInvocation from "@/galaxy/src/workflows/WorkflowInvocation";
 
+    /**
+     * Error Info modal button
+     * Generates a model showing the workflow error log
+     */
     export default {
         extends: FunctionIcon,
         name: "ErrorInfo",
         props: {
+            /**
+             * @ignore
+             */
             icon: {
                 type: String,
                 default: 'icon-errorinfo',
             },
+
+            /**
+             * @ignore
+             */
             label: {
                 type: String,
                 default: 'Error Info',
             },
+
+            /**
+             * @ignore
+             */
             description: {
                 type: String,
                 default: 'View error log',
             },
+
+            /**
+             * WorkflowInvocation Vue instance with model to show log
+             */
             item: {
                 type: WorkflowInvocation,
                 required: true,
             },
+
+            /**
+             * @ignore
+             */
             action: {
                 type: Function,
                 required: false,
