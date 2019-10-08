@@ -22,7 +22,6 @@
                  v-bind:per-page="perPage"
                  v-bind:filter="filter"
                  v-bind:filter-function="filterFunc"
-                 sort-by="name"
                  primary-key="id"
                  @row-selected="row_selected"
                  thead-class="hidden_header"
@@ -149,11 +148,11 @@
              */
             genomes: {
                 async get() {
-                    let genomes = Genome.all();
+                    let genomes = Genome.query().orderBy('name').get();
                     if (genomes.length === 0) {
                         // Fetch once
                         await Genome.$fetch();
-                        genomes = Genome.all();
+                        genomes = Genome.query().orderBy('name').get();
                     }
                     return genomes;
                 },
