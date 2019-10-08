@@ -38,7 +38,7 @@
                      sort-by="hid"
                      empty-text="Drag and drop files here to upload"
                      thead-class="hidden_header"
-                     @row-selected="onInput"
+                     @row-selected="row_selected"
                      @dragstart.native.stop.prevent @dragover.native.prevent="upload_dragging=true" @dragleave.native="upload_dragging=false" @dragexit.native="upload_dragging=false" @drop.native.prevent="uploadHandler"
                      ref="table"
             >
@@ -133,7 +133,10 @@
             user_filter: '',
         }},
         asyncComputed: {
-            model() { return this.historyPromise },
+            /**
+             * History model instance
+             */
+            history() { return this.historyPromise },
         },
         computed: {
             /**
@@ -141,9 +144,9 @@
              * @returns {Array<{'item': (HistoryDatasetAssociation|HistoryDatasetCollectionAssociation), 'hid': Number, 'key': string}>}
              */
             items() {
-                if (this.model === null || this.upload_dragging) return [];
+                if (this.history === null || this.upload_dragging) return [];
                 //TODO when features available replace concat with v-for..of or model.morphTo(element property)
-                const history = History.query().with('datasets.history').find(this.model.id); // TODO the reactivity system fails to update if .with(datasets) in historyPromise
+                const history = History.query().with('datasets.history').find(this.history.id); // TODO the reactivity system fails to update if .with(datasets) in historyPromise
                 return history.datasets
                     .concat(history.collections)
                     .filter(item=>!item.deleted && this.filter(item)) //TODO make deleted optional, needs ui control
@@ -155,7 +158,7 @@
              * Asset loading state
              */
             isLoading() {
-                return this.model === null;
+                return this.history === null;
             }
         },
         methods: {
@@ -180,7 +183,13 @@
             show_upload() {
                 this.$refs.upload.click();
             },
-            onInput(items) {
+
+            /**
+             * Translate row selection event of b-table to input event
+             * Only emits first selected genome
+             * @param items {Array<HistoryDatasetAssociation|HistoryDatasetCollectionAssociation>} Selected history items
+             */
+            row_selected(items) {
                 this.$emit('input', items.map(item=>item.item));
             },
 
@@ -190,7 +199,7 @@
              */
             uploadHandler(evt) {
                 this.upload_dragging=false;
-                if (this.model === null) return; //If user tries to upload before finished loading, do nothing.
+                if (this.history === null) return; //If user tries to upload before finished loading, do nothing.
                 const files = evt.dataTransfer ? evt.dataTransfer.files : evt.target.files;
 
                 // Enforce accepted file types
@@ -205,7 +214,7 @@
                                 file: file,
                                 name: "Incorrect file format: " + file.name,
                                 hid: -1,
-                                history_id: this.model.id,
+                                history_id: this.history.id,
                                 extension: this.accepted_upload_types[0],
                             }
                         });
@@ -217,14 +226,14 @@
                 // Hand off upload event to parent for further processing
                 const self = this;
                 this.$emit('upload', {
-                    history: this.model,
+                    history: this.history,
                     files: accepted_files,
                     default() { for (const file of accepted_files) {
                         // TODO handle specifying extension elsewhere
                         // TODO hardcoded extension mapping to avoid sniff for now
                         let ext = file.name.match(/[^.]+$/);
-                        if (ext && temporary_extension_to_datatype_map.hasOwnProperty(ext[0])) self.model.fileUpload(file, temporary_extension_to_datatype_map[ext[0]]);
-                        else self.model.fileUpload(file);
+                        if (ext && temporary_extension_to_datatype_map.hasOwnProperty(ext[0])) self.history.fileUpload(file, temporary_extension_to_datatype_map[ext[0]]);
+                        else self.history.fileUpload(file);
                     }},
                 });
             },
