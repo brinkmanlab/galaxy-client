@@ -25,9 +25,10 @@
 </template>
 
 <script>
-    import * as galaxy from "@/galaxy/src/";
     import History from "../histories/History";
     import ErrorInfo from "@/galaxy/src/workflows/WorkflowInvocationFunctions/ErrorInfo";
+    import {WorkflowInvocation} from "@/galaxy/src/api/workflows";
+    import {HistoryDatasetAssociation} from "@/galaxy/src/api/history_contents";
     export default {
         name: "WorkflowInvocation",
         components: {
@@ -36,7 +37,7 @@
         },
         props: {
             model: {
-                type: galaxy.workflows.WorkflowInvocation,
+                type: WorkflowInvocation,
                 required: true,
                 //TODO validator to check that history and steps loaded
             },
@@ -80,11 +81,11 @@
                     let result = {};
                     if (this.model === null) return {};
                     for (let key of Object.keys(this.model.outputs)) {
-                        let hda = galaxy.history_contents.HistoryDatasetAssociation.find(this.model.outputs[key].id);
+                        let hda = HistoryDatasetAssociation.find(this.model.outputs[key].id);
                         if (hda) result[key] = hda;
                         else {
-                            await galaxy.history_contents.HistoryDatasetAssociation.$get({params:{url: this.model.history.get_contents_url(), id: this.model.outputs[key].id}});
-                            hda = galaxy.history_contents.HistoryDatasetAssociation.find(this.model.outputs[key].id);
+                            await HistoryDatasetAssociation.$get({params:{url: this.model.history.get_contents_url(), id: this.model.outputs[key].id}});
+                            hda = HistoryDatasetAssociation.find(this.model.outputs[key].id);
                             result[key] = hda;
                             if (!hda.constructor.end_states.includes(hda.state)) {
                                 hda.start_polling(()=>{
