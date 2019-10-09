@@ -89,11 +89,11 @@ const Module = {
 };
 
 function register(database) {
-    database.register(Model, Module);
+    database.register(Folder, Module);
 }
 
 export {
-    Model,
+    Folder,
     Module,
     register,
 };
