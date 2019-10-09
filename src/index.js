@@ -24,9 +24,6 @@ const database = new Database();
 //import * as extended_metadata from './api/extended_metadata';
 //extended_metadata.register(database);
 
-//import * as folder_contents from './api/folder_contents';
-//folder_contents.register(database);
-
 //import * as folders from './api/folders';
 //folders.register(database);
 
@@ -53,9 +50,6 @@ history_contents.register(database);
 
 //import * as item_tags from './api/item_tags';
 //item_tags.register(database);
-
-//import * as job_files from './api/job_files';
-//job_files.register(database);
 
 import * as jobs from './api/jobs';
 jobs.register(database);
@@ -114,9 +108,6 @@ jobs.register(database);
 //import * as tours from './api/tours';
 //tours.register(database);
 
-//import * as uploads from './api/uploads';
-//uploads.register(database);
-
 import * as users from './api/users';
 users.register(database);
 
@@ -138,7 +129,6 @@ function register(store, http={}) {
     VuexORM.use(VuexORMAxios, {
         database,
         http: {
-            baseURL: '/',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
@@ -155,7 +145,7 @@ function register(store, http={}) {
  * @param func function that takes a single argument, the methodConf instance of the model
  */
 function applyMethodConf(func) {
-    for (const submodule of Object.values(require('.'))) {
+    for (const submodule of Object.values(submodules)) {
         for (const model of Object.values(submodule)) {
             if (model.hasOwnProperty('methodConf')) {
                 func(model.methodConf);
@@ -164,10 +154,7 @@ function applyMethodConf(func) {
     }
 }
 
-export {
-    database,
-    register,
-    applyMethodConf,
+const submodules = {
     common,
 //    annotations,
 //    authenticate,
@@ -187,7 +174,6 @@ export {
     histories,
     history_contents,
 //    item_tags,
-//    job_files,
     jobs,
 //    libraries,
 //    library_contents,
@@ -207,9 +193,15 @@ export {
 //    tools,
 //    toolshed,
 //    tours,
-//    uploads,
     users,
 //    visualizations,
 //    webhooks,
     workflows,
 };
+
+export {
+    submodules as default,
+    database,
+    register,
+    applyMethodConf,
+}
