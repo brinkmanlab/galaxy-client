@@ -165,5 +165,8 @@
 </script>
 
 <style scoped>
+    .row:empty {
+        display: none; /* Hide empty slots */
+    }
 
 </style>
