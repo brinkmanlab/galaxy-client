@@ -390,7 +390,7 @@ class StoredWorkflow extends Common.Model {
 
             // Tag the new history with the workflow id for future lookup
             history.tags.push(this.id);
-            history.post();
+            history.post(['tags']);
         }
 
         // Create new collections before invocation

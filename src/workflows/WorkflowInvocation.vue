@@ -6,8 +6,8 @@
                 @galaxy-history-deleted="model.stop_polling()"
         >
             <template v-slot="">
-                <span class="galaxy-workflow-invocation-state">{{ state }}</span>
-                <span class="galaxy-workflow-invocation-progress">
+                <span class="galaxy-workflow-invocation-state" v-bind:class="state">{{ state_label(state) }}</span>
+                <span class="galaxy-workflow-invocation-progress" v-bind:class="state">
                     <b-progress class="w-100" v-bind:max="step_count()">
                         <b-progress-bar variant="success" v-bind:animated="false" v-bind:value="(states['scheduled'] || 0) + (states['ok'] || 0)">{{progress_label('ok')}}</b-progress-bar>
                         <b-progress-bar variant="success" v-bind:animated="true" v-bind:value="states['running']">{{progress_label('running')}}</b-progress-bar>
@@ -48,6 +48,10 @@
         methods: {
             step_count() {
                 return Object.values(this.states).reduce((a,b)=>a+b, 0);
+            },
+            state_label(state) {
+                if (state === 'new') return 'queued';
+                return state;
             },
             progress_label(state) {
                 if (Object.values(this.states).length === 0) return '';
