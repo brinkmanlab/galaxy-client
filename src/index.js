@@ -1,5 +1,5 @@
 import VuexORM, { Database } from '@vuex-orm/core'
-import VuexORMAxios from "@vuex-orm/plugin-axios/src"; // TODO Only src adds axios params (?key=)
+import VuexORMAxios from "@vuex-orm/plugin-axios/src"; // TODO https://github.com/brinkmanlab/IslandCompare/issues/185
 
 const database = new Database();
 
