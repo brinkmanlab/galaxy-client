@@ -42,7 +42,7 @@
                      @dragstart.native.stop.prevent @dragover.native.prevent="upload_dragging=true" @dragleave.native="upload_dragging=false" @dragexit.native="upload_dragging=false" @drop.native.prevent="uploadHandler"
                      ref="table"
             >
-                <template slot="[item]" slot-scope="row">
+                <template v-slot:cell(item)="row">
                     <DatasetItem
                             v-if="row.value.history_content_type==='dataset'"
                             v-bind:model="row.value"
