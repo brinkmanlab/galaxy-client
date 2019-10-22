@@ -79,7 +79,7 @@
     import FunctionIcon from "@/galaxy/src/misc/FunctionIcon";
 
     const temporary_extension_to_datatype_map = {
-        "genbank": "genbank", "gbk": "genbank", "embl": "embl", "gbff": "genbank"
+        "genbank": "genbank", "gbk": "genbank", "embl": "embl", "gbff": "genbank", "newick": "newick", "nwk": "newick"
     };
 
     /**
