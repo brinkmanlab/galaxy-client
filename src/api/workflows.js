@@ -199,7 +199,7 @@ class WorkflowInvocation extends Common.Model {
             Object.entries(step.states()).forEach(([state, count]) => {
                 acc[state] = (acc[state] || 0) + count;
             });
-            return acc
+            return acc;
         }, tmp);
     }
 

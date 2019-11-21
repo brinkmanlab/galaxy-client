@@ -5,7 +5,7 @@
         <EditableLabel class="galaxy-history-item-name" @update="update_label" v-bind:value="model.name" placeholder="Enter a name to identify this dataset" ref="label"></EditableLabel>
         <!-- TODO add more progress states depending on hda state -->
         <b-progress v-bind:class="'galaxy-history-item-progress w-100 '+this.model.state"
-                    v-if="model.upload_progress<100 || model.state === 'queued'"
+                    v-if="model.upload_progress<100 || model.state === 'queued' || model.state === 'running'"
                     v-bind:max="100"
                     variant="info" striped animated>
             <b-progress-bar class="galaxy-history-item-progressbar" v-bind:value="model.upload_progress"></b-progress-bar>
