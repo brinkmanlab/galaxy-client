@@ -122,6 +122,25 @@ class User extends Common.Model {
         }
     }
 
+    /**
+     * Verify the api key is valid
+     * @param key API key to validate
+     * @returns {Promise<boolean>} True if valid, false otherwise.
+     */
+    static async verifyAPIKey(key) {
+        try {
+            await axios.get('http://galaxy.pathogenomics.sfu.ca/api/whoami', {
+                ...this.methodConf.http,
+                params: {
+                    key,
+                }
+            });
+        } catch (error) {
+            return false;
+        }
+        return true;
+    }
+
     //Vuex ORM Axios Config
     static methodConf = {
         http: {
