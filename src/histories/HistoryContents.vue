@@ -262,6 +262,7 @@
 
     .galaxy-history-contents .b-table-sticky-header {
         width: 100%;
+        margin-bottom: unset;
     }
 
     .galaxy-history-contents .row:first-child {
