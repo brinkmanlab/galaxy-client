@@ -1,5 +1,5 @@
 <template>
-    <b-card class="galaxy-workflow-parameter-dataset" v-bind:header="label+(optional?' (Optional)': '')" v-bind:border-variant="validation_message ? 'danger' : 'default'">
+    <WorkflowParameterBase class="galaxy-workflow-parameter-dataset" v-bind="{...$attrs, ...$props}" :validation_message="validation_message">
         <HistoryContents ref="history_contents"
                          v-bind:historyPromise="historyPromise"
                          v-bind:value="value"
@@ -12,17 +12,12 @@
             <i class="icon-batch-mode"></i>
             This input expects a single selection. Separate jobs will be triggered for each dataset selection.
         </span>
-        <b-card-footer v-if="validation_message" footer-text-variant="danger">
-            <em>{{validation_message}}</em>
-        </b-card-footer>
-        <b-card-footer v-else footer-text-variant="info">
-            {{ annotation }}
-        </b-card-footer>
-    </b-card>
+    </WorkflowParameterBase>
 </template>
 
 <script>
     import HistoryContents from "../../histories/HistoryContents";
+    import WorkflowParameterBase from "../WorkflowParameterBase";
 
     /**
      * Workflow dataset/collection parameter
@@ -30,7 +25,7 @@
      */
     export default {
         name: "DatasetParameter",
-        components: { HistoryContents },
+        components: {WorkflowParameterBase, HistoryContents },
         props: {
             /**
              * Input type as returned by the api
@@ -65,20 +60,33 @@
             },
 
             /**
-             *
+             * The initial value, allows component to work with v-model
              */
             value: {
                 type: Array,
                 default(){return []},
             },
+
+            /**
+             * List of accepted file extensions
+             */
             format: {
                 type: Array,
                 default() { return [] },
             },
+
+            /**
+             *
+             */
             optional: {
                 type: Boolean,
                 default: false,
             },
+
+            /**
+             * User input validator callback
+             * Callback receives list of selected datasets, must return an empty string if valid or a validation message if not.
+             */
             validator: {
                 type: Function,
                 default(selection) {

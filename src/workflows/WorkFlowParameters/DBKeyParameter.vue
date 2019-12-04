@@ -1,20 +1,15 @@
 <template>
-    <b-card class="galaxy-workflow-parameter-dbkey" v-bind:header="label+(optional?' (Optional)': '')" v-bind:border-variant="validation_message ? 'danger' : 'default'">
+    <WorkflowParameterBase class="galaxy-workflow-parameter-dbkey" v-bind="{...$attrs, ...$props}" :validation_message="validation_message">
         <ReferenceGenomes v-bind:value="value" @input="onInput" ref="table" />
-        <b-card-footer v-if="validation_message" footer-text-variant="danger">
-            <em>{{validation_message}}</em>
-        </b-card-footer>
-        <b-card-footer v-else footer-text-variant="info">
-            {{ annotation }}
-        </b-card-footer>
-    </b-card>
+    </WorkflowParameterBase>
 </template>
 
 <script>
     import ReferenceGenomes from "../../genomes/ReferenceGenomes";
+    import WorkflowParameterBase from "../WorkflowParameterBase";
     export default {
         name: "DBKeyParameter",
-        components: {ReferenceGenomes},
+        components: {WorkflowParameterBase, ReferenceGenomes},
         props: {
             label: {
                 type: String,
