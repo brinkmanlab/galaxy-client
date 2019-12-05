@@ -9,10 +9,10 @@
                 <span class="galaxy-workflow-invocation-state" v-bind:class="state">{{ state_label(state) }}</span>
                 <span class="galaxy-workflow-invocation-progress" v-bind:class="state">
                     <b-progress class="w-100" v-bind:max="step_count()">
-                        <b-progress-bar variant="success" v-bind:animated="false" v-bind:value="(states['scheduled'] || 0) + (states['ok'] || 0)">{{progress_label('ok')}}</b-progress-bar>
-                        <b-progress-bar variant="success" v-bind:animated="true" v-bind:value="states['running']">{{progress_label('running')}}</b-progress-bar>
-                        <b-progress-bar variant="danger" v-bind:animated="true" v-bind:value="states['error']">{{progress_label('error')}}</b-progress-bar>
-                        <b-progress-bar variant="info" v-bind:animated="false" v-bind:value="(states['new'] || 0) + (states['queued'] || 0)">{{progress_label('new')}}</b-progress-bar>
+                        <b-progress-bar variant="success" v-bind:animated="false" v-bind:value="(states['scheduled'] || 0) + (states['ok'] || 0)" :title="progress_label('ok')">{{progress_label('ok')}}</b-progress-bar>
+                        <b-progress-bar variant="success" v-bind:animated="true" v-bind:value="states['running']" :title="progress_label('running')">{{progress_label('running')}}</b-progress-bar>
+                        <b-progress-bar variant="danger" v-bind:animated="true" v-bind:value="states['error']" :title="progress_label('error')">{{progress_label('error')}}</b-progress-bar>
+                        <b-progress-bar variant="info" v-bind:animated="false" v-bind:value="(states['new'] || 0) + (states['queued'] || 0)" :title="progress_label('new')">{{progress_label('new')}}</b-progress-bar>
                     </b-progress>
                 </span>
             </template>
