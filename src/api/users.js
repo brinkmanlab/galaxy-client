@@ -129,7 +129,7 @@ class User extends Common.Model {
      */
     static async verifyAPIKey(key) {
         try {
-            await axios.get('http://galaxy.pathogenomics.sfu.ca/api/whoami', {
+            await axios.get('/api/whoami', {
                 ...this.methodConf.http,
                 params: {
                     key,
