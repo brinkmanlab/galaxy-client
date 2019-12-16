@@ -126,7 +126,7 @@ class HistoryDatasetAssociation extends Common.Model {
      * @returns {Promise<HistoryDatasetAssociation>} Model representing uploaded dataset
      */
     static async $upload(file, history_id, file_type = 'auto') {
-        //TODO move to Dataset, this was placed here because the api returns an hda object
+        //TODO move to Dataset, this was placed here because the api returns an hda object (a dataset must have an hda to exist)
         // Create placeholder hda while uploading
         const tmp_id = file.name+Math.floor(Math.random()*10**16).toString();
         let ext = file.name.match(/[^.]+$/);
@@ -180,37 +180,37 @@ class HistoryDatasetAssociation extends Common.Model {
         while (this.waiting_uploads[0] !== throttle) await this.waiting_uploads[0];
 
         // Initiate upload
-        let response = await axios.post('/api/tools', formData, {
-            //...this.methodConf.http, TODO something in the config breaks this request
-            baseURL: this.methodConf.http.baseURL,
-            headers: {
-                ...this.methodConf.http.headers,
-                'Content-Type': 'multipart/form-data',
-            },
-            onUploadProgress: progressEvent => {
-                // Update placeholder hda with progress
-                let upload_progress = (progressEvent.loaded * 100 / progressEvent.total) - 1; //-1 To keep progress indicator active until temporary hda deleted
-                HistoryDatasetAssociation.update({
-                    where: tmp_id,
-                    data: { upload_progress: upload_progress }
-                });
-            },
-        });
-
-        // Allow next waiting upload
-        this.waiting_uploads.shift();
-        resolve();
-
-        // Update or replace placeholder hda
-        if (response.status !== 200) {
-            HistoryDatasetAssociation.update({
-                where: tmp_id,
-                data: { name: "Upload failed" } //TODO append file name
+        try {
+            let response = await axios.post('/api/tools', formData, {
+                //...this.methodConf.http, TODO something in the config breaks this request
+                baseURL: this.methodConf.http.baseURL,
+                headers: {
+                    ...this.methodConf.http.headers,
+                    'Content-Type': 'multipart/form-data',
+                },
+                onUploadProgress: progressEvent => {
+                    // Update placeholder hda with progress
+                    let upload_progress = (progressEvent.loaded * 100 / progressEvent.total) - 1; //-1 To keep progress indicator active until temporary hda deleted
+                    HistoryDatasetAssociation.update({
+                        where: tmp_id,
+                        data: {upload_progress: upload_progress}
+                    });
+                },
             });
-            throw Error('Failed to upload ' + file.name);
-        } else {
+
+            // Update or replace placeholder hda
             HistoryDatasetAssociation.delete(tmp_id);
             return await HistoryDatasetAssociation.insert({data: response.data.outputs[0]});
+        } catch (e) {
+            HistoryDatasetAssociation.update({
+                where: tmp_id,
+                data: { name: 'Failed to upload ' + file.name }
+            });
+            throw e;
+        } finally {
+            // Allow next waiting upload
+            this.waiting_uploads.shift();
+            resolve();
         }
     }
 
