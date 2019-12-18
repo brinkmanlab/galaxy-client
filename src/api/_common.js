@@ -131,14 +131,17 @@ class Model extends VuexModel {
         const self = this;
         if (!window.hasOwnProperty('pollHandles')) window.pollHandles = new Map();
         if (!window.pollHandles.has(this.id)) {
-            const f = ()=>{ //TODO this can be done better :/
+            const f = ()=>{ //Make following code block passable to setTimeout
                 self.reload(options).then(() => {
                     if (typeof stop_criteria === "function" && stop_criteria()) {
-                        this.stop_polling();
+                        self.stop_polling();
                     } else {
                         // Reschedule after reload
-                        window.pollHandles.set(this.id, setTimeout(f, interval));
+                        window.pollHandles.set(self.id, setTimeout(f, interval));
                     }
+                }).catch(()=> {
+                    // Reschedule if reload fails (possibly due to a connection error)
+                    window.pollHandles.set(self.id, setTimeout(f, interval));
                 });
             };
             f();
