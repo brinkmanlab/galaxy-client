@@ -128,17 +128,24 @@ class User extends Common.Model {
      * @returns {Promise<boolean>} True if valid, false otherwise.
      */
     static async verifyAPIKey(key) {
-        try {
-            await axios.get('/api/whoami', {
-                ...this.methodConf.http,
-                params: {
-                    key,
-                }
-            });
-        } catch (error) {
-            return false;
+        // TODO centralise all network error handling and recovery
+        for (let i = 0; i < 40; ++i) { // Retry 40 times (20 seconds)
+            try {
+                await axios.get('/api/whoami', {
+                    ...this.methodConf.http,
+                    params: {
+                        key,
+                    }
+                });
+                return true;
+            } catch (error) {
+                // Galaxy returns 403 when unauthenticated
+                if (error.response.status === 403) return false;
+                // Retry request for all other errors after delay
+                await new Promise(r => setTimeout(r, 500));
+            }
         }
-        return true;
+        throw Error("Unable to connect to backend");
     }
 
     //Vuex ORM Axios Config
