@@ -3,7 +3,7 @@
         <History
                 v-if="model.history"
                 v-bind:model="model.history"
-                @galaxy-history-deleted="model.stop_polling()"
+                @galaxy-history-deleted="model.delete()"
         >
             <template v-slot="">
                 <span class="galaxy-workflow-invocation-state" v-bind:class="state">{{ state_label(state) }}</span>
