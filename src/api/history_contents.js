@@ -196,6 +196,7 @@ class HistoryDatasetAssociation extends Common.Model {
                         data: {upload_progress: upload_progress}
                     });
                 },
+                validateStatus: status => { return status === 200 }, //TODO is code 200 the only valid response? 201? 202?
             });
 
             // Update or replace placeholder hda
