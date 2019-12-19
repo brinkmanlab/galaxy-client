@@ -3,7 +3,7 @@
         <History
                 v-if="model.history"
                 v-bind:model="model.history"
-                @galaxy-history-deleted="model.delete()"
+                @galaxy-history-deleted="history_deleted"
         >
             <template v-slot="">
                 <span class="galaxy-workflow-invocation-state" v-bind:class="state">{{ state_label(state) }}</span>
@@ -67,6 +67,9 @@
                 if (state === 'new' && 'queued' in this.states) return this.states['queued'] + ' pending';
                 if (state === 'error') return this.states[state] + ' failed';
             },
+            history_deleted() {
+                this.model.delete();
+            }
         },
         computed: {
             states() {
