@@ -20,17 +20,29 @@ const HasState = {
      * @param extra Additional parameters passed to Model.start_polling()
      */
     poll_state(callback = ()=>true, ...extra) {
+        this.poll_state_callback(undefined, callback, ...extra);
+    },
+
+
+    /**
+     * Poll state_callback until it is an end_state
+     * @param state_callback Callback that must return a string containing the models state
+     * @param callback Called when state changes to end_state, return true to stop polling, false to continue
+     * @param extra Additional parameters passed to Model.start_polling()
+     */
+    poll_state_callback(state_callback = undefined, callback = ()=>true, ...extra) {
         let self = this;
-        if (!this.constructor.end_states.includes(self.state)) {
+        self = self.constructor.find(self.id); // TODO recover from the reactivity system failing
+        if (state_callback === undefined) state_callback = ()=>self.state;
+        if (!this.constructor.end_states.includes(state_callback())) {
             this.start_polling(()=>{
-                self = self.constructor.find(self.id); // TODO recover from the reactivity system failing
-                if (self.constructor.end_states.includes(self.state)) {
+                if (self.constructor.end_states.includes(state_callback())) {
                     return callback();
                 }
                 return false;
             }, ...extra);
         }
-    }
+    },
 };
 
 
@@ -129,11 +141,12 @@ class Model extends VuexModel {
      */
     start_polling(stop_criteria, options={}, interval=10000) {
         const self = this;
+        if (typeof stop_criteria !== "function") stop_criteria = ()=>false;
         if (!window.hasOwnProperty('pollHandles')) window.pollHandles = new Map();
         if (!window.pollHandles.has(this.id)) {
             const f = ()=>{ //Make following code block passable to setTimeout
                 self.reload(options).then(() => {
-                    if (typeof stop_criteria === "function" && stop_criteria()) {
+                    if (stop_criteria()) {
                         self.stop_polling();
                     } else {
                         // Reschedule after reload

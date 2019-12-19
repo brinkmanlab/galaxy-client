@@ -15,7 +15,12 @@ import { Job } from "./jobs";
 class WorkflowInvocationStep extends Common.Model {
     static entity = 'WorkflowInvocationStep';
     static primaryKey = 'id';
-    static end_states = ['scheduled','error'];
+    static end_states = ['scheduled','error','failed'];
+
+    constructor(...args) {
+        super(...args);
+        Object.assign(this, Common.HasState);
+    }
 
     static fields() {
         return {
@@ -151,6 +156,11 @@ class WorkflowInvocation extends Common.Model {
     static primaryKey = 'id';
     static end_states = ["cancelled", "error", "done", "failed"];
 
+    constructor(...args) {
+        super(...args);
+        Object.assign(this, Common.HasState);
+    }
+
     static fields() {
         return {
             ...super.fields(),
@@ -208,11 +218,12 @@ class WorkflowInvocation extends Common.Model {
      * @returns {string} Name of current aggregate state
      */
     aggregate_state() {
-        if (this.state === "cancelled") return this.state;
+        if (this.state === "cancelled" || this.state === 'failed') return this.state;
         let states = this.states();
         if (Object.entries(states).length === 0) return "new";
         if (states.new) return "running";
         if (states.error) return "error";
+        if (states.paused) return "error";
         return "done";
     }
 

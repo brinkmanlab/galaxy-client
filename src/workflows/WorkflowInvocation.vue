@@ -85,17 +85,10 @@
                     let result = {};
                     if (this.model === null) return {};
                     for (let key of Object.keys(this.model.outputs)) {
-                        let hda = HistoryDatasetAssociation.find(this.model.outputs[key].id);
-                        if (hda) result[key] = hda;
-                        else {
-                            await HistoryDatasetAssociation.$get({params:{url: this.model.history.get_contents_url(), id: this.model.outputs[key].id}});
-                            hda = HistoryDatasetAssociation.find(this.model.outputs[key].id);
+                        let hda = await HistoryDatasetAssociation.findOrLoad(this.model.outputs[key].id, this.model.history.get_contents_url());
+                        if (hda) {
                             result[key] = hda;
-                            if (!hda.constructor.end_states.includes(hda.state)) {
-                                hda.start_polling(()=>{
-                                    return hda.constructor.end_states.includes(hda.state);
-                                });
-                            }
+                            hda.poll_state();
                         }
                     }
                     return result;
@@ -104,16 +97,10 @@
             },
         },
         mounted() {
-            // TODO replace with this.model.poll_state()
-            if (!this.model.constructor.end_states.includes(this.model.aggregate_state())) {
-                this.model.start_polling(()=>{
-                    if (this.model.constructor.end_states.includes(this.model.aggregate_state())) {
-                        this.$emit('workflow-completed', this);
-                        return true;
-                    }
-                    return false;
-                }, {query: {view: "element", step_details: true}});
-            }
+            this.model.poll_state_callback(this.model.aggregate_state.bind(this.model), ()=>{
+                this.$emit('workflow-completed', this);
+                if (this.states.pending) console.log(this.model);
+            }, {query: {view: "element", step_details: true}})
         },
         beforeDestroy() {
             if (this.model)
