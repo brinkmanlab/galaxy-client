@@ -1,28 +1,39 @@
 <template>
-    <!-- Boolean -->
-    <b-form-radio-group v-if="this.type === 'boolean'" buttons
-                        class="galaxy-workflow-parameter-simple"
-                        v-bind:state="validation_message ? 'invalid' : null"
-    >
-        <option value="true">Yes</option>
-        <option value="false">No</option>
-        <b-form-invalid-feedback>{{validation_message}}</b-form-invalid-feedback>
-    </b-form-radio-group>
-    <!-- Text, Integer, Float, Color -->
-    <b-form-group v-else
-                  v-bind:label="label"
-                  v-bind:description="annotation"
-                  v-bind:invalid-feedback="validation_message"
-                  v-bind:state="validation_message ? 'invalid' : null"
-                  class="galaxy-workflow-parameter-simple"
-    >
-        <b-form-input v-bind:type="form_type" v-bind:number="form_type === 'number'" ref="input"/>
-    </b-form-group>
+    <WorkflowParameterBase class="galaxy-workflow-parameter-simple" v-bind="{...$attrs, ...$props}" :validation_message="validation_message">
+        <!-- Boolean -->
+        <b-form-radio-group v-if="this.type === 'boolean'" buttons
+                            v-bind:state="validation_message ? 'invalid' : null"
+        >
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+            <b-form-invalid-feedback>{{validation_message}}</b-form-invalid-feedback>
+        </b-form-radio-group>
+        <!-- Select -->
+        <b-form-group v-else-if="this.type === 'select'"
+                      v-bind:label="label"
+                      v-bind:description="annotation"
+                      v-bind:invalid-feedback="validation_message"
+                      v-bind:state="validation_message ? 'invalid' : null"
+        >
+            <b-form-select v-model="user_input" :options="select_options" />
+        </b-form-group>
+        <!-- Text, Integer, Float, Color -->
+        <b-form-group v-else
+                      v-bind:label="label"
+                      v-bind:description="annotation"
+                      v-bind:invalid-feedback="validation_message"
+                      v-bind:state="validation_message ? 'invalid' : null"
+        >
+            <b-form-input v-bind:type="form_type" v-bind:number="form_type === 'number'" v-model="user_input"/>
+        </b-form-group>
+    </WorkflowParameterBase>
 </template>
 
 <script>
+    import WorkflowParameterBase from "../WorkflowParameterBase";
     export default {
         name: "SimpleParameter",
+        components: {WorkflowParameterBase},
         props: {
             label: {
                 type: String,
@@ -44,9 +55,14 @@
                 type: Boolean,
                 default: false,
             },
+            options: {
+                type: Array || Object,
+                default: [],
+            }
         },
         data() {return{
             validation_message: '',
+            user_input: this.value,
         }},
         computed: {
             form_type() {
@@ -62,6 +78,17 @@
                     case 'color':
                         return 'color';
                 }
+            },
+            select_options() {
+                if (Array.isArray(this.options))
+                    return this.options;
+                else
+                    // The way bootstrap maps keys to the value of the select is stupid. You can't have multiple options map to the same value.
+                    // Remap object k:v to list of entries
+                    return Object.entries(this.options).reduce((cur, acc)=>{
+                        acc.push({text: cur[0], value: cur[1], disabled: false});
+                        return acc;
+                    }, []);
             },
         },
         methods: {
