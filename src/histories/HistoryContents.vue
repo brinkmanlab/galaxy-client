@@ -3,12 +3,13 @@
         <b-row>
             <b-input-group size="sm" prepend="Filter">
                 <b-form-input
-                    v-model="user_filter"
+                    v-model="search"
                     type="search"
                     placeholder="Type to Search"
                 />
                 <b-input-group-append>
-                    <b-button :disabled="!user_filter" @click="user_filter = ''">Clear</b-button>
+                    <b-button :disabled="!search" @click="search_next(true)" title="Previous match"><i class="icon icon-prev"></i></b-button>
+                    <b-button :disabled="!search" @click="search_next(false)" title="Next match"><i class="icon icon-next"></i></b-button>
                 </b-input-group-append>
             </b-input-group>
 
@@ -33,16 +34,15 @@
                      selectable
                      select-mode="range"
                      :fields="['item']"
-                     :filter="user_filter"
-                     :filter-function="filterFunc"
                      sort-by="hid"
                      empty-text="Drag and drop files here to upload"
                      thead-class="hidden_header"
                      @row-selected="row_selected"
                      @dragstart.native.stop.prevent @dragover.native.prevent="upload_dragging=true" @dragleave.native="upload_dragging=false" @dragexit.native="upload_dragging=false" @drop.native.prevent="uploadHandler"
                      ref="table"
+                     @keydown.native="handle_hotkey"
             >
-                <template v-slot:cell(item)="row">
+                <template v-slot:cell(item)="row" :class="{'search-target': row.value === search_target}">
                     <DatasetItem
                             v-if="row.value.history_content_type==='dataset'"
                             v-bind:model="row.value"
@@ -81,6 +81,15 @@
     const temporary_extension_to_datatype_map = {
         "genbank": "genbank", "gbk": "genbank", "embl": "embl", "gbff": "genbank", "newick": "newick", "nwk": "newick"
     };
+
+    /**
+     * Match criteria for searchbox
+     * @param query {String} Search string to compare
+     * @param item {HistoryDatasetAssociation || HistoryDatasetCollectionAssociation} item to evaluate
+     */
+    search_match(query, item) {
+        return item.hid.toString() === query || item.name.includes(query);
+    }
 
     /**
      * History contents list
@@ -130,7 +139,9 @@
         },
         data() {return{
             upload_dragging: false,
-            user_filter: '',
+            search: '',
+            search_target: null,
+            search_target_index: -1,
         }},
         asyncComputed: {
             /**
@@ -163,20 +174,6 @@
         },
         methods: {
             /**
-             * Filter function used by b-table
-             * @param row {{item: HistoryDatasetAssociation|HistoryDatasetCollectionAssociation, hid: Number, key: string}} row being evaluated for filtering
-             * @param filter {string} Filter string provided to b-table
-             * @returns {boolean} True to display row, False otherwise
-             */
-            filterFunc(row, filter) {
-                if (typeof filter === "string")
-                    return row.item.hid.toString().includes(filter) || row.item.name.includes(filter);
-                else if (filter.hasOwnProperty('test'))
-                    return filter.test(row.item.hid.toString()) || filter.test(row.item.name);
-                return true;
-            },
-
-            /**
              * Open the browser file selection dialog
              * @public
              */
@@ -186,12 +183,46 @@
 
             /**
              * Translate row selection event of b-table to input event
-             * Only emits first selected genome
              * @param items {Array<HistoryDatasetAssociation|HistoryDatasetCollectionAssociation>} Selected history items
              */
             row_selected(items) {
                 this.$emit('input', items.map(item=>item.item));
             },
+            
+            /**
+             * Find next match in items, highlight and scroll to row
+             * @param reverse {Boolean} Search backwards
+             */
+             search_next(reverse = false) {
+                 const step = reverse ? -1 : 1;
+                 
+                 // Ensure current index is not more than one step from items bounds and wrap if needed
+                 this.search_target_index += step;
+                 if (this.search_target_index < 0) this.search_target_index = reverse ? this.items.length-1 : 0;
+                 else if (this.search_target_index >= this.items.length) this.search_target_index = reverse ? this.items.length-1 : 0;
+                 const start_index = this.search_target_index;
+                 
+                 // Iterate until next match
+                 do {
+                     const item = this.items[this.search_target_index].item;
+                     if (search_match(query, item)) {
+                         // Match found
+                         this.search_target = item;
+                         
+                         // Scroll to new target
+                         //TODO
+                         return;
+                     }
+                     this.search_target_index += step;
+                     
+                     // Wrap in appropriate direction
+                     if (this.search_target_index < 0) this.search_target_index = this.items.length-1;
+                     else if (this.search_target_index >= this.items.length) this.search_target_index = 0;
+                 } while (this.search_target_index !== start_index) // Don't wrap past start_index
+                 
+                 // No next match found
+                 this.search_target = null;
+             }
 
             /**
              * Handle upload events
@@ -239,10 +270,34 @@
             },
 
             /**
+             * Check keypress events for supported hotkeys
+             * @param evt {KeyPressEvent} event object
+             */
+            handle_hotkey(evt) {
+                //TODO
+                if ((evt.ctrl || evt.command) && evt.key === 'a') {
+                    this.$refs.table.select(this.items);
+                    return false;
+                }
+                return true;
+            }
+
+            /**
              *  Clear selection
              *  @public
              */
             clearSelected() { this.$refs.table.clearSelected(); },
+        },
+        watch: {
+            search() {
+                if (!this.search) {
+                    this.search_target = null;
+                    this.search_target_index = -1; // Always start new query searching from top 
+                } else if (this.search_target === null || search_match(this.search, this.search_target)) {
+                    // Only search next if no current target or current target doesn't match
+                    this.search_next();
+                }
+            }
         },
         mounted() {
             if (this.value.length) {
@@ -255,22 +310,26 @@
     }
 </script>
 
-<style>
-    .galaxy-history-contents .hidden_header {
+<style scoped>
+    >>> .selection-target {
+        border: 1px dotted grey;
+    }
+
+    >>> .hidden_header {
         display: none;
     }
 
-    .galaxy-history-contents .b-table-sticky-header {
+    >>> .b-table-sticky-header {
         width: 100%;
         margin-bottom: unset;
     }
 
-    .galaxy-history-contents .row:first-child {
+    >>> .row:first-child {
         flex-wrap: nowrap;
         align-items: center;
     }
 
-    .galaxy-history-contents .row:first-child .galaxy-function i {
+    >>> .row:first-child .galaxy-function i {
         font-size: 1.5rem;
         padding-left: 0.5vw;
     }
