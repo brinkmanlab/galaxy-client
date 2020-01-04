@@ -8,8 +8,8 @@
                     placeholder="Type to Search"
                 />
                 <b-input-group-append>
-                    <b-button :disabled="!search" @click="search_next(true)" title="Previous match"><i class="icon icon-prev"></i></b-button>
-                    <b-button :disabled="!search" @click="search_next(false)" title="Next match"><i class="icon icon-next"></i></b-button>
+                    <b-button :disabled="!search" @click="search_next(true)" title="Previous match"><i class="icon icon-prev"/></b-button>
+                    <b-button :disabled="!search" @click="search_next(false)" title="Next match"><i class="icon icon-next"/></b-button>
                 </b-input-group-append>
             </b-input-group>
 
@@ -72,11 +72,11 @@
 </template>
 
 <script>
-    import { History } from "@/galaxy/src/api/histories";
-    import { HistoryDatasetAssociation } from "@/galaxy/src/api/history_contents";
+    import { History } from "@/api/histories";
+    import { HistoryDatasetAssociation } from "@/api/history_contents";
     import DatasetItem from './HistoryItems/Dataset';
     import CollectionItem from "./HistoryItems/Collection";
-    import FunctionIcon from "@/galaxy/src/misc/FunctionIcon";
+    import FunctionIcon from "@/misc/FunctionIcon";
 
     const temporary_extension_to_datatype_map = {
         "genbank": "genbank", "gbk": "genbank", "embl": "embl", "gbff": "genbank", "newick": "newick", "nwk": "newick"
@@ -87,7 +87,7 @@
      * @param query {String} Search string to compare
      * @param item {HistoryDatasetAssociation || HistoryDatasetCollectionAssociation} item to evaluate
      */
-    search_match(query, item) {
+    function search_match(query, item) {
         return item.hid.toString() === query || item.name.includes(query);
     }
 
@@ -205,7 +205,7 @@
                  // Iterate until next match
                  do {
                      const item = this.items[this.search_target_index].item;
-                     if (search_match(query, item)) {
+                     if (search_match(this.query, item)) {
                          // Match found
                          this.search_target = item;
                          
@@ -218,11 +218,11 @@
                      // Wrap in appropriate direction
                      if (this.search_target_index < 0) this.search_target_index = this.items.length-1;
                      else if (this.search_target_index >= this.items.length) this.search_target_index = 0;
-                 } while (this.search_target_index !== start_index) // Don't wrap past start_index
+                 } while (this.search_target_index !== start_index); // Don't wrap past start_index
                  
                  // No next match found
                  this.search_target = null;
-             }
+             },
 
             /**
              * Handle upload events
@@ -280,7 +280,7 @@
                     return false;
                 }
                 return true;
-            }
+            },
 
             /**
              *  Clear selection

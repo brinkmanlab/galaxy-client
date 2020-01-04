@@ -21,21 +21,25 @@ class Genome extends Common.Model {
     // TODO GET /api/genomes/{id}/sequences
 
     //Vuex ORM Axios Config
+    static apiConfig = {
+        url: '/api/genomes',
+        dataTransformer(response) {
+            //TODO Bandaid to deal with lazy api output
+            if (response.config.url.match('/api/genomes$')) {
+                let data = [];
+                for (let i = 0; i < response.data.length; ++i) {
+                    if (response.data[i][0] === '----- Additional Species Are Below -----') continue; // Handle https://github.com/galaxyproject/galaxy/issues/8612
+                    data[i] = {name: response.data[i][0], id: response.data[i][1]};
+                }
+                return data;
+            }
+            return response.data;
+        },
+    };
+
     static methodConf = {
         http: {
-            url: '/api/genomes',
-            onResponse(response) {
-                //TODO Bandaid to deal with lazy api output
-                if (response.config.url.match('/api/genomes$')) {
-                    let data = [];
-                    for (let i = 0; i < response.data.length; ++i) {
-                        if (response.data[i][0] === '----- Additional Species Are Below -----') continue; // Handle https://github.com/galaxyproject/galaxy/issues/8612
-                        data[i] = {name: response.data[i][0], id: response.data[i][1]};
-                    }
-                    return data;
-                }
-                return response.data;
-            },
+
         },
         methods: {
             $fetch: {
@@ -52,27 +56,6 @@ class Genome extends Common.Model {
                     method: 'get',
                 },
             },
-            /*$create: {
-                name: 'create',
-                http: {
-                    url: '', //TODO
-                    method: 'post',
-                },
-            },
-            $update: {
-                name: 'update',
-                http: {
-                    url: '/:id', //TODO
-                    method: 'put',
-                },
-            },
-            $delete: {
-                name: 'delete',
-                http: {
-                    url: '/:id', //TODO
-                    method: 'delete',
-                },
-            },*/
         }
     }
 }

@@ -10,7 +10,7 @@
 <script>
     import RemoveHistoryItem from "./HistoryItemFunctions/Remove";
     import RenameHistoryItem from "./HistoryItemFunctions/Rename";
-    import HistoryItem from "@/galaxy/src/histories/HistoryItem";
+    import HistoryItem from "@/histories/HistoryItem";
 
     /**
      * Container component for History item function buttons

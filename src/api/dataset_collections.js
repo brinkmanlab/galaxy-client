@@ -3,6 +3,8 @@
  * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.dataset_collections
  * TODO not implemented
  */
+throw Error('Not Implemented');
+/* eslint-disable no-unreachable */
 import * as Common from "./_common";
 
 

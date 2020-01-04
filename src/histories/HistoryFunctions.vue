@@ -5,7 +5,7 @@
 </template>
 
 <script>
-    import History from "@/galaxy/src/histories/History";
+    import History from "@/histories/History";
     /**
      * Container component for History function buttons
      */

@@ -4,6 +4,7 @@
  * TODO not implemented, no api endpoints provided
  */
 throw Error('Not Implemented');
+/* eslint-disable no-unreachable */
 import * as Common from "./_common";
 
 

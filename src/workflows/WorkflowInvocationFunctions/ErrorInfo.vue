@@ -3,8 +3,8 @@
 </template-->
 
 <script>
-    import FunctionIcon from "@/galaxy/src/misc/FunctionIcon";
-    import WorkflowInvocation from "@/galaxy/src/workflows/WorkflowInvocation";
+    import FunctionIcon from "@/misc/FunctionIcon";
+    import WorkflowInvocation from "@/workflows/WorkflowInvocation";
 
     /**
      * Error Info modal button

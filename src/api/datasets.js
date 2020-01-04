@@ -8,6 +8,7 @@
  * TODO not implemented
  */
 throw Error('Not Implemented');
+/* eslint-disable no-unreachable */
 import * as Common from "./_common";
 
 

@@ -90,7 +90,8 @@ class Model extends VuexModel {
      * @returns {Promise<*>} result of $get()
      */
     async reload(options={}) {
-        return await this.constructor.$get({
+        const request = this.constructor.api();
+        return await request.get(, {
             ...options,
             params: {
                 url: this.get_base_url(),
@@ -127,9 +128,11 @@ class Model extends VuexModel {
      * Models that require other model information in their api url will override this function.
      * @returns {string} Base url for model api endpoint
      */
-    get_base_url() {
-        return '';
+    get_base_url(request) {
+        return request.url;
     }
+
+    get_url
 
     /**
      * Start requesting model updates at a specified interval.

@@ -5,12 +5,13 @@
 </template>
 
 <script>
-    import * as galaxy from "@/galaxy";
+    import WorkflowInvocationStep from "@/api/workflows";
+    //TODO this is incomplete
     export default {
         name: "WorkflowInvocationStep",
         props: {
             model: {
-                type: galaxy.workflows.WorkflowInvocationStep,
+                type: WorkflowInvocationStep,
                 required: true,
             }
         }
