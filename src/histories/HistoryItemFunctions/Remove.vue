@@ -4,7 +4,7 @@
 
 <script>
     import FunctionIcon from '../../misc/FunctionIcon';
-    import HistoryItem from "@/histories/HistoryItem";
+    import HistoryItem from "../../histories/HistoryItem";
 
     /**
      * Remove history item button

@@ -4,13 +4,15 @@
  */
 import * as Common from "./_common";
 
-import { HistoryDatasetAssociation, HistoryDatasetCollectionAssociation } from "./history_contents"; //eslint-disable-line
+import { HistoryDatasetAssociation, HistoryDatasetCollectionAssociation } from "./history_contents";
+import {api as galaxy} from "../index"; //eslint-disable-line
 
 
 class History extends Common.Model {
     static entity = 'History';
     static primaryKey = 'id';
     static end_states = ['ok','error'];
+    static apiPath = '/api/histories/';
 
     constructor(...args) {
         super(...args);
@@ -84,14 +86,6 @@ class History extends Common.Model {
     //TODO GET /api/histories/{id}/exports/{jeha_id}
 
     /**
-     * Getter for contents url
-     * @returns {string} URL for history contents with base url removed
-     */
-    get_contents_url() {
-        return this.contents_url.replace(new RegExp('^' + this.constructor.methodConf.http.baseURL), ''); // Remove baseURL as it will be reattached later
-    }
-
-    /**
      * Upload a file to this history
      * @param file {File} File to upload
      * @param file_type {string} Optional file type to skip sniffing
@@ -104,51 +98,38 @@ class History extends Common.Model {
             else return; // If dropped items aren't files, reject them
         } // Else use DataTransfer interface to access the file(s)
         if (file)
-            return await HistoryDatasetAssociation.$upload(file, this.id, file_type);
+            return await HistoryDatasetAssociation.upload(file, this.id, file_type);
     }
 
-    //Vuex ORM Axios Config
-    static methodConf = {
-        http: {
-            url: '/api/histories'
-        },
-        methods: {
-            $fetch: {
-                name: 'fetch',
-                http: {
-                    url: '?view=detailed',
-                    method: 'get',
-                },
-            },
-            $get: {
-                name: 'get',
-                http: {
-                    url: '/:id',
-                    method: 'get',
-                },
-            },
-            $create: {
-                name: 'create',
-                http: {
-                    url: '?view=detailed',
-                    method: 'post',
-                },
-            },
-            $update: {
-                name: 'update',
-                http: {
-                    url: '/:id',
-                    method: 'put',
-                },
-            },
-            $delete: {
-                name: 'delete',
-                http: {
-                    url: '/:id',
-                    method: 'delete',
-                },
-            },
+    static async fetch(options = {}) {
+        return super.fetch({params: {view: 'detailed', ...options.params}, ...options})
+    }
+
+    static async post(options = {}) {
+        return super.fetch({params: {view: 'detailed', ...options.params}, ...options})
+    }
+
+    async loadContents() {
+        if (this.datasets.length === 0) {
+            await galaxy.history_contents.HistoryDatasetAssociation.fetch(this);
         }
+        /*if (history.collections.length === 0) { TODO
+            await galaxy.history_contents.HistoryDatasetCollectionAssociation.$fetch({
+                params: {
+                    url: history.get_contents_url(),
+                }
+            });
+        }*/
+    }
+
+    async getAssociation(id) {
+        let result = HistoryDatasetAssociation.find(id);
+        if (result) return result;
+        result = HistoryDatasetCollectionAssociation.find(id);
+        if (result) return result;
+        const response = await this.request('get', {url:`${this.build_url()}contents/${id}/`});
+        result = Object.values(response.entities)[0][0];
+        return result;
     }
 }
 

@@ -9,7 +9,6 @@
 </template>
 
 <script>
-    //import * as galaxy from "@/galaxy";
     import WorkflowInvocationStep from './WorkflowInvocationStep'
 
     export default {

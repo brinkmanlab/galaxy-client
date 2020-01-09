@@ -1,10 +1,10 @@
-export WorkflowInvocation from "./WorkflowInvocation";
-export WorkflowInvocationStep from "./WorkflowInvocationStep";
-export WorkflowInvocationSteps from "./WorkflowInvocationSteps";
-export WorkflowParameter from "./WorkflowParameter";
-export WorkflowParameterBase from "./WorkflowParameterBase";
-export WorkflowParameters from "./WorkflowParameters";
+export const WorkflowInvocation = import(/* webpackChunkName: "WorkflowInvocation" */"./WorkflowInvocation");
+export const WorkflowInvocationStep = import(/* webpackChunkName: "WorkflowInvocationStep" */"./WorkflowInvocationStep");
+export const WorkflowInvocationSteps = import(/* webpackChunkName: "WorkflowInvocationSteps" */"./WorkflowInvocationSteps");
+export const WorkflowParameter = import(/* webpackChunkName: "WorkflowParameter" */"./WorkflowParameter");
+export const WorkflowParameterBase = import(/* webpackChunkName: "WorkflowParameterBase" */"./WorkflowParameterBase");
+export const WorkflowParameters = import(/* webpackChunkName: "WorkflowParameters" */"./WorkflowParameters");
 
-export DatasetParameter from "./WorkFlowParameters/DatasetParameter";
-export DBKeyParameter from "./WorkFlowParameters/DBKeyParameter";
-export SimpleParameter from "./WorkFlowParameters/SimpleParameter";
+export const DatasetParameter = import(/* webpackChunkName: "DatasetParameter" */"./WorkFlowParameters/DatasetParameter");
+export const DBKeyParameter = import(/* webpackChunkName: "DBKeyParameter" */"./WorkFlowParameters/DBKeyParameter");
+export const SimpleParameter = import(/* webpackChunkName: "SimpleParameter" */"./WorkFlowParameters/SimpleParameter");

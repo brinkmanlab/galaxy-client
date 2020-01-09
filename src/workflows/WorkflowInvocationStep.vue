@@ -5,13 +5,13 @@
 </template>
 
 <script>
-    import WorkflowInvocationStep from "@/api/workflows";
+    //import WorkflowInvocationStep from "../api/workflows";
     //TODO this is incomplete
     export default {
         name: "WorkflowInvocationStep",
         props: {
             model: {
-                type: WorkflowInvocationStep,
+                //type: WorkflowInvocationStep,
                 required: true,
             }
         }

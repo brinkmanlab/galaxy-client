@@ -6,11 +6,9 @@ const database = new Database();
 
 const config = {
     axios,
-    http: {
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        },
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
     },
 };
 

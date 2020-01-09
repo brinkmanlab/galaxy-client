@@ -36,28 +36,6 @@ class Genome extends Common.Model {
             return response.data;
         },
     };
-
-    static methodConf = {
-        http: {
-
-        },
-        methods: {
-            $fetch: {
-                name: 'fetch',
-                http: {
-                    url: '',
-                    method: 'get',
-                },
-            },
-            $get: {
-                name: 'get',
-                http: {
-                    url: '/:id',
-                    method: 'get',
-                },
-            },
-        }
-    }
 }
 
 const Module = {

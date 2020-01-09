@@ -88,51 +88,6 @@ class WorkflowInvocationStep extends Common.Model {
         }
         return log;
     }
-
-    //Vuex ORM Axios Config
-    static methodConf = {
-        http: {
-            url: ':url'
-        },
-        methods: {
-            //TODO Galaxy api currently doesn't support steps fetch
-            //$fetch: {
-            //    name: 'fetch',
-            //    http: {
-            //        url: '',
-            //        method: 'get',
-            //    },
-            //},
-            $get: {
-                name: 'get',
-                http: {
-                    url: '/:id',
-                    method: 'get',
-                },
-            },
-            //$create: {
-            //    name: 'create',
-            //    http: {
-            //        url: '',
-            //        method: 'post',
-            //    },
-            //},
-            $update: {
-                name: 'update',
-                http: {
-                    url: '/:id',
-                    method: 'put',
-                },
-            },
-            //$delete: {
-            //    name: 'delete',
-            //    http: {
-            //        url: '/:id',
-            //        method: 'delete',
-            //    },
-            //},
-        }
-    }
 }
 
 /*class WorkflowInvocationOutput extends Common.Model {
@@ -155,6 +110,7 @@ class WorkflowInvocation extends Common.Model {
     static entity = 'WorkflowInvocation';
     static primaryKey = 'id';
     static end_states = ["cancelled", "error", "done", "failed"];
+    static apiPath = 'invocations/';
 
     constructor(...args) {
         super(...args);
@@ -188,10 +144,20 @@ class WorkflowInvocation extends Common.Model {
      * Overrides parent to attach workflow id to url
      * @returns {string} api url for this model instance
      */
-    get_base_url() {
-        let workflow = this.workflow;
-        if (!workflow) workflow = StoredWorkflow.find(this.workflow_id);
-        return workflow.get_url();
+    build_url() {
+        return `${StoredWorkflow.build_url()}${this.workflow_id}/invocations/${this.id}/`
+    }
+
+    static build_url() {
+        throw("WorkflowInvocation url is relative to workflow, must call on a model instance");
+    }
+
+    static async fetch(workflow, options) {
+        const response = await this.request('get', {url: `${workflow.build_url()}${this.apiPath}`, ...options});
+        if (response.entities) {
+            return response.entities[this.entity];
+        }
+        return this.all();
     }
 
     /**
@@ -240,25 +206,36 @@ class WorkflowInvocation extends Common.Model {
         return log;
     }
 
-    //Vuex ORM Axios Config
-    static methodConf = {
-        http: {
-            url: ':url/invocations',
-            onResponse(response) {
-                //TODO Bandaid to fix incorrect workflow_id
-                let id = response.config.url.match(/\/api\/workflows\/([^/]+)\/invocations/);
-                if (id) {
-                    let data = response.data;
-                    if (!(data instanceof Array)) data = [data];
-                    for (let datum of data) {
-                        datum.workflow_id = id[1];
-                    }
-                }
+    async getOutputs() {
+        if (!this.history) this.history = History.findOrLoad(this.history_id);
+        let result = {};
+        for (let key of Object.keys(this.outputs)) {
+            let hda = await this.history.getAssociation(this.outputs[key].id);
+            if (hda) {
+                result[key] = hda;
+                hda.poll_state();
+            }
+        }
+        return result;
+    }
 
-                //TODO Bandaid to deal with invocation not storing ids of steps
-                if (Array.isArray(response.data)) {
-                    response.data.forEach(invocation =>{
-                        if (invocation.hasOwnProperty('steps')) invocation.steps.forEach(step => {
+    //Vuex ORM Axios Config
+    static apiConfig = {
+        dataTransformer(response) {
+            //TODO Bandaid to fix incorrect workflow_id
+            let id = response.config.url.match(/\/api\/workflows\/([^/]+)\/invocations/);
+            if (id) {
+                let data = response.data;
+                if (!(data instanceof Array)) data = [data];
+                for (let datum of data) {
+                    datum.workflow_id = id[1];
+                }
+            }
+
+            //TODO Bandaid to deal with invocation not storing ids of steps
+            if (Array.isArray(response.data)) {
+                response.data.forEach(invocation =>{
+                    if (invocation.hasOwnProperty('steps')) invocation.steps.forEach(step => {
                         step.workflow_invocation_id = response.data.id;
                         if (step.jobs) {
                             step.jobs.forEach(job => {
@@ -266,59 +243,21 @@ class WorkflowInvocation extends Common.Model {
                             });
                         }
                     })});
-                } else if (response.data.hasOwnProperty('steps')) {
-                    response.data.steps.forEach(step => {
-                        step.workflow_invocation_id = response.data.id;
-                        if (step.jobs) {
-                            step.jobs.forEach(job => {
-                                job.workflow_invocation_step_id = step.id;
-                            });
-                        }
-                    });
-                }
-
-                //TODO Bandaid to deal with receiving dict for outputs and output_collections
-                //response.data.outputs = Object.keys(response.data.outputs).reduce((acc, cur)=>{acc.append({label: cur, ...response.data.outputs[cur]})}, []);
-                return response.data;
+            } else if (response.data.hasOwnProperty('steps')) {
+                response.data.steps.forEach(step => {
+                    step.workflow_invocation_id = response.data.id;
+                    if (step.jobs) {
+                        step.jobs.forEach(job => {
+                            job.workflow_invocation_step_id = step.id;
+                        });
+                    }
+                });
             }
+
+            //TODO Bandaid to deal with receiving dict for outputs and output_collections
+            //response.data.outputs = Object.keys(response.data.outputs).reduce((acc, cur)=>{acc.append({label: cur, ...response.data.outputs[cur]})}, []);
+            return response.data;
         },
-        methods: {
-            $fetch: {
-                name: 'fetch',
-                http: {
-                    url: '',
-                    method: 'get',
-                },
-            },
-            $get: {
-                name: 'get',
-                http: {
-                    url: '/:id',
-                    method: 'get',
-                },
-            },
-            $create: {
-                name: 'create',
-                http: {
-                    url: '',
-                    method: 'post',
-                },
-            },
-            $update: {
-                name: 'update',
-                http: {
-                    url: '/:id',
-                    method: 'put',
-                },
-            },
-            $delete: {
-                name: 'delete',
-                http: {
-                    url: '/:id',
-                    method: 'delete',
-                },
-            },
-        }
     };
 }
 
@@ -328,6 +267,7 @@ class WorkflowInvocation extends Common.Model {
 class StoredWorkflow extends Common.Model {
     static entity = 'StoredWorkflow';
     static primaryKey = 'id';
+    static apiPath = '/api/workflows/';
 
     static fields() {
         return {
@@ -361,14 +301,6 @@ class StoredWorkflow extends Common.Model {
     //TODO POST /api/workflows/{encoded_workflow_id}/invocations. Done in WorkflowInvocation $create?
 
     /**
-     * Get appi endpoint without the global base url
-     * @returns {string} API URL for this instance
-     */
-    get_url() {
-        return this.url.replace(new RegExp('^' + this.constructor.methodConf.http.baseURL), ''); // Remove baseURL as it will be reattached later
-    }
-
-    /**
      * Invoke the stored workflow
      * @param inputs {Object<Object>} Mapping of workflow inputs keyed on step index
      * @param history {History|undefined} Optional history to store invocation data, if undefined a new history will be created.
@@ -385,23 +317,16 @@ class StoredWorkflow extends Common.Model {
         if (history === undefined) {
             //Create history to store run
             try {
-                response = await History.$create({
-                    data: {
-                        name: label,
-                    }
+                history = await History.post({
+                    name: label,
                 });
             } catch (e) {
                 throw "Failed to create job history.";
             }
 
-            if (response) history = History.find(response.id);
-            if (!history) {
-                throw "Failed to create job history.";
-            }
-
             // Tag the new history with the workflow id for future lookup
             history.tags.push(this.id);
-            history.post(['tags']);
+            history.put(['tags']);
         }
 
         // Create new collections before invocation
@@ -410,18 +335,13 @@ class StoredWorkflow extends Common.Model {
             if (input.src === 'new_collection') {
                 //Create collection of inputs in new history
                 try {
-                    response = await HistoryDatasetCollectionAssociation.$create({
-                        params: {
-                            url: history.get_contents_url(),
-                        },
-                        data: {
-                            name: input.name,
-                            type: 'dataset_collection',
-                            collection_type: this.steps[index].tool_inputs.collection_type,
-                            copy_elements: true,
-                            element_identifiers: input.element_identifiers,
-                        }
-                    });
+                    response = await this.request('post', {data: {
+                        name: input.name,
+                        type: 'dataset_collection',
+                        collection_type: this.steps[index].tool_inputs.collection_type,
+                        copy_elements: true,
+                        element_identifiers: input.element_identifiers,
+                    }});
                     inputs[index] = {id: response.id, src: 'hdca'};
                 } catch (e) {
                     history.delete();
@@ -432,18 +352,12 @@ class StoredWorkflow extends Common.Model {
 
         // Invoke workflow
         try {
-            response = await WorkflowInvocation.$create({
-                params: {
-                    url: this.get_url(),
-                },
-                data: {
-                    // new_history_name: specify a new history and leave history_id: null TODO if new_collection as src above works, swap history_id for this
-                    history_id: history.id,
-                    no_add_to_history: true,
-                    inputs: inputs,
-                }
+            return WorkflowInvocation.post({
+                // new_history_name: specify a new history and leave history_id: null TODO if new_collection as src above works, swap history_id for this
+                history_id: history.id,
+                no_add_to_history: true,
+                inputs: inputs,
             });
-            return WorkflowInvocation.find(response.id);
         } catch (e) {
             // Invocation failed, cleanup.
             history.delete();
@@ -460,15 +374,13 @@ class StoredWorkflow extends Common.Model {
         if (histories) {
             // Fetch each invocation individually by history id
             await Promise.all(histories.map(history=>{
-                return WorkflowInvocation.$fetch({
-                    params: {url: this.get_url()},
-                    query: {view: "element", step_details: true, history_id: history.id}
+                return WorkflowInvocation.fetch(this, {
+                    params: {view: "element", step_details: true, history_id: history.id}
                 })
             }));
         } else {
-            await WorkflowInvocation.$fetch({
-                params: {url: this.get_url()},
-                query: {view: "element", step_details: true}
+            await WorkflowInvocation.fetch({
+                params: {view: "element", step_details: true}
             });
         }
 
@@ -482,58 +394,6 @@ class StoredWorkflow extends Common.Model {
     get_invocations_query() {
         // TODO this.invocations should be reactive and not need this function
         return WorkflowInvocation.query().where('workflow_id', this.id).whereHas('history', q => q.where('deleted', false)).with('history|workflow|steps.jobs');
-    }
-
-    //Vuex ORM Axios Config
-    static methodConf = {
-        http: {
-            url: '/api/workflows',
-            //onResponse(response) {
-            //    //TODO Bandaid to fix fetching shared workflows
-            //    let found = response.config.url.match(/\/api\/workflows\/menu/);
-            //    if (found) {
-            //        return response.data.workflows;
-            //    }
-            //    return response.data;
-            //}
-        },
-        methods: {
-            $fetch: {
-                name: 'fetch',
-                http: {
-                    url: '',
-                    method: 'get',
-                },
-            },
-            $get: {
-                name: 'get',
-                http: {
-                    url: '/:id',
-                    method: 'get',
-                },
-            },
-            $create: {
-                name: 'create',
-                http: {
-                    url: '',
-                    method: 'post',
-                },
-            },
-            $update: {
-                name: 'update',
-                http: {
-                    url: '/:id',
-                    method: 'put',
-                },
-            },
-            $delete: {
-                name: 'delete',
-                http: {
-                    url: '/:id',
-                    method: 'delete',
-                },
-            },
-        }
     }
 }
 

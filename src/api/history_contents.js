@@ -4,13 +4,13 @@
  */
 import * as Common from "./_common";
 import { History } from './histories';
-import axios from "axios";
 
 class HistoryDatasetAssociation extends Common.Model {
     static entity = 'HistoryDatasetAssociation';
     static primaryKey = 'id';
     static end_states = ['ok', 'error', 'paused', 'failed'];
     static ready_states = ['ok', 'queued'];
+    static apiPath = 'contents/datasets/';
 
     constructor(...args) {
         super(...args);
@@ -84,10 +84,20 @@ class HistoryDatasetAssociation extends Common.Model {
      * Build base url for model instance specific api endpoint.
      * @returns {string} Base url for model api endpoint
      */
-    get_base_url() {
-        let history = this.history;
-        if (!history) history = History.find(this.history_id);
-        return history.get_contents_url();
+    build_url() {
+        return `${History.build_url()}${this.history_id}/${this.constructor.apiPath}${this.id}`;
+    }
+
+    static build_url() {
+        throw("HistoryDatasetAssociation url is relative to history, must call on a model instance");
+    }
+
+    static async fetch(history, options) {
+        const response = await this.request('get', {url: `${history.build_url()}${this.apiPath}`, ...options});
+        if (response.entities) {
+            return response.entities[this.entity];
+        }
+        return this.all();
     }
 
     /**
@@ -112,8 +122,8 @@ class HistoryDatasetAssociation extends Common.Model {
      * @returns {Promise<null|*>} Null if ghost instance or the result of $delete()
      */
     async delete(options = {}) {
-        this.deleted = true;
-        return super.delete({...options, params: {url: this.get_base_url(), ...options.params}});
+        this.deleted = true; // TODO is this necessary any more?
+        return super.delete(options);
     }
 
     static waiting_uploads = []; // TODO switch to a promise pool library?
@@ -125,7 +135,7 @@ class HistoryDatasetAssociation extends Common.Model {
      * @param file_type {string} Optional type of file, skips server side type sniff step
      * @returns {Promise<HistoryDatasetAssociation>} Model representing uploaded dataset
      */
-    static async $upload(file, history_id, file_type = 'auto') {
+    static async upload(file, history_id, file_type = 'auto') {
         //TODO move to Dataset, this was placed here because the api returns an hda object (a dataset must have an hda to exist)
         // Create placeholder hda while uploading
         const tmp_id = file.name+Math.floor(Math.random()*10**16).toString();
@@ -181,11 +191,8 @@ class HistoryDatasetAssociation extends Common.Model {
 
         // Initiate upload
         try {
-            let response = await axios.post('/api/tools', formData, {
-                //...this.methodConf.http, TODO something in the config breaks this request
-                baseURL: this.methodConf.http.baseURL,
+            let response = await this.post('/api/tools', formData, {
                 headers: {
-                    ...this.methodConf.http.headers,
                     'Content-Type': 'multipart/form-data',
                 },
                 onUploadProgress: progressEvent => {
@@ -197,11 +204,12 @@ class HistoryDatasetAssociation extends Common.Model {
                     });
                 },
                 validateStatus: status => { return status === 200 }, //TODO is code 200 the only valid response? 201? 202?
+                save: false,
             });
 
             // Update or replace placeholder hda
             HistoryDatasetAssociation.delete(tmp_id);
-            return await HistoryDatasetAssociation.insert({data: response.data.outputs[0]});
+            return HistoryDatasetAssociation.insert({data: response.data.outputs[0]});
         } catch (e) {
             HistoryDatasetAssociation.update({
                 where: tmp_id,
@@ -214,55 +222,12 @@ class HistoryDatasetAssociation extends Common.Model {
             resolve();
         }
     }
-
-    //Vuex ORM Axios Config
-    static methodConf = {
-        http: {
-            url: ':url/datasets', // TODO change from :url to full api path with :history_id
-        },
-        methods: {
-            $fetch: {
-                name: 'fetch',
-                http: {
-                    url: '?view=detailed',
-                    method: 'get',
-                },
-            },
-            $get: {
-                name: 'get',
-                http: {
-                    url: '/:id',
-                    method: 'get',
-                },
-            },
-            $create: {
-                name: 'create',
-                http: {
-                    url: '', //TODO
-                    method: 'post',
-                },
-            },
-            $update: {
-                name: 'update',
-                http: {
-                    url: '/:id', //TODO
-                    method: 'put',
-                },
-            },
-            $delete: {
-                name: 'delete',
-                http: {
-                    url: '/:id', //TODO
-                    method: 'delete',
-                },
-            },
-        }
-    }
 }
 
 class HistoryDatasetCollectionAssociation extends Common.Model {
     static entity = 'HistoryDatasetCollectionAssociation';
     static primaryKey = 'id';
+    static apiPath = 'contents/dataset_collections/';
 
     static fields() {
         return {
@@ -297,10 +262,20 @@ class HistoryDatasetCollectionAssociation extends Common.Model {
      * Build base url for model instance specific api endpoint.
      * @returns {string} Base url for model api endpoint
      */
-    get_base_url() {
-        let history = this.history;
-        if (!history) history = History.find(this.history_id);
-        return history.get_contents_url();
+    build_url() {
+        return `${History.build_url()}${this.history_id}/${this.constructor.apiPath}${this.id}`;
+    }
+
+    static build_url() {
+        throw("HistoryDatasetCollectionAssociation url is relative to history, must call on a model instance");
+    }
+
+    static async fetch(history, options) {
+        const response = await this.request('get', {url: `${history.build_url()}${this.apiPath}`, ...options});
+        if (response.entities) {
+            return response.entities[this.entity];
+        }
+        return this.all();
     }
 
     /**
@@ -317,52 +292,8 @@ class HistoryDatasetCollectionAssociation extends Common.Model {
      * @returns {Promise<null|*>} Null if ghost instance or the result of $delete()
      */
     async delete(options = {}) {
-        this.deleted = true;
-        return super.delete({...options, params: {url: this.get_base_url(), ...options.params}});
-    }
-
-    //Vuex ORM Axios Config
-    static methodConf = {
-        http: {
-            url: ':url/dataset_collections' // TODO change from :url to full api path with :history_id
-        },
-        methods: {
-            $fetch: {
-                name: 'fetch',
-                http: {
-                    url: '?view=detailed',
-                    method: 'get',
-                },
-            },
-            $get: {
-                name: 'get',
-                http: {
-                    url: '/:id',
-                    method: 'get',
-                },
-            },
-            $create: {
-                name: 'create',
-                http: {
-                    url: '', //TODO
-                    method: 'post',
-                },
-            },
-            $update: {
-                name: 'update',
-                http: {
-                    url: '/:id', //TODO
-                    method: 'put',
-                },
-            },
-            $delete: {
-                name: 'delete',
-                http: {
-                    url: '/:id', //TODO
-                    method: 'delete',
-                },
-            },
-        }
+        this.deleted = true; // TODO is this necessary any more?
+        return super.delete(options);
     }
 }
 

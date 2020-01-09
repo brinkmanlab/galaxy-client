@@ -1,1 +1,1 @@
-export ReferenceGenomes from "./ReferenceGenomes";
+export const ReferenceGenomes = import(/* webpackChunkName: "ReferenceGenomes" */"./ReferenceGenomes");

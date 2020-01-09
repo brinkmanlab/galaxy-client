@@ -22,9 +22,9 @@
 </template>
 
 <script>
-    import {HistoryDatasetAssociation, HistoryDatasetCollectionAssociation} from "@/api/history_contents";
+    import {HistoryDatasetAssociation, HistoryDatasetCollectionAssociation} from "../api/history_contents";
     import HistoryItemFunctions from "./HistoryItemFunctions";
-    import EditableLabel from "@/misc/EditableLabel";
+    import EditableLabel from "../misc/EditableLabel";
 
     /**
      * Base component for history items
@@ -65,7 +65,7 @@
              */
             update_label(value) {
                 this.model.name = value;
-                this.model.post(['name']);
+                this.model.put(['name']);
             }
         },
         mounted() {

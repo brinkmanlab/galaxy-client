@@ -20,6 +20,9 @@ export default {
         if (!options || !options.store) {
             throw new Error('Please initialise plugin with a Vuex store.')
         }
+        if (options.baseURL) {
+            config.baseURL = options.baseURL;
+        }
         VuexORM.install(database, {namespace: 'galaxy'})(options.store)
         // https://vuejs.org/v2/guide/components-registration.html
         //Vue.component("", );

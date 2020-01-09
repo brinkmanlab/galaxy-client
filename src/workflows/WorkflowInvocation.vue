@@ -25,10 +25,10 @@
 </template>
 
 <script>
-    import History from "@/histories/History";
-    import ErrorInfo from "@/workflows/WorkflowInvocationFunctions/ErrorInfo";
-    import {WorkflowInvocation} from "@/api/workflows";
-    import {HistoryDatasetAssociation} from "@/api/history_contents";
+    import History from "../histories/History";
+    import ErrorInfo from "../workflows/WorkflowInvocationFunctions/ErrorInfo";
+    import {WorkflowInvocation} from "../api/workflows";
+
     export default {
         name: "WorkflowInvocation",
         components: {
@@ -85,16 +85,8 @@
         asyncComputed: {
             outputs: {
                 async get() {
-                    let result = {};
                     if (this.model === null) return {};
-                    for (let key of Object.keys(this.model.outputs)) {
-                        let hda = await HistoryDatasetAssociation.findOrLoad(this.model.outputs[key].id, this.model.history.get_contents_url());
-                        if (hda) {
-                            result[key] = hda;
-                            hda.poll_state();
-                        }
-                    }
-                    return result;
+                    return this.model.getOutputs();
                 },
                 default: {},
             },
