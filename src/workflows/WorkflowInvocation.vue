@@ -44,6 +44,7 @@
         },
         data() {return {
             self: this,
+            outputs: null,
         }},
         methods: {
             step_count() {
@@ -79,23 +80,30 @@
                 return this.model.aggregate_state();
             },
             done() {
-                return this.outputs && Object.entries(this.outputs).length && Object.values(this.outputs).every(o => o.state === 'ok');
+                if (this.outputs === null) return false;
+                const models = Object.values(this.outputs);
+                return models.length > 0 && models.every(o => o.state === 'ok');
             },
+            _model_outputs() {
+                return this.model.outputs;
+            }
         },
-        asyncComputed: {
-            outputs: {
-                async get() {
-                    if (this.model === null) return {};
-                    return this.model.getOutputs();
-                },
-                default: {},
-            },
+        watch: {
+            _model_outputs() {
+                if (this.outputs === null && this.model.outputs && Object.entries(this.model.outputs).length) {
+                    const self = this;
+                    this.$nextTick(async function () {
+                        self.outputs = await self.model.getOutputs();
+                    });
+                }
+            }
         },
-        mounted() {
+        created() {
+            // Poll the aggregate state of the model
             this.model.poll_state_callback(this.model.aggregate_state.bind(this.model), ()=>{
                 this.$emit('workflow-completed', this);
                 if (this.states.pending) console.log(this.model);
-            }, {query: {view: "element", step_details: true}})
+            }, {params: {view: "element", step_details: true}});
         },
         beforeDestroy() {
             if (this.model)

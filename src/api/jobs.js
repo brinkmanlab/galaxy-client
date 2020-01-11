@@ -84,7 +84,7 @@ class Job extends Common.Model {
         for (const [key, val] of Object.entries(self.outputs)) {
             switch (val.src) {
                 case 'hda': {
-                    const hda = await HistoryDatasetAssociation.findOrLoad(val.id, self.history.get_contents_url());
+                    const hda = await HistoryDatasetAssociation.findOrLoad(val.id, self.history);
                     if (hda.state === 'error') {
                         log += `${label} on ${input_identifier} - ${key}: ${hda.misc_info}\n`;
                         // TODO move to Dataset model

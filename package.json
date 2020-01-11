@@ -19,7 +19,6 @@
     "lodash.merge": "^4.6.2"
   },
   "devDependencies": {
-    "@babel/plugin-proposal-class-properties": "^7.7.4",
     "@vue/cli-plugin-babel": "^4.1.2",
     "@vue/cli-plugin-eslint": "^4.1.2",
     "@vue/cli-service": "^4.1.2",

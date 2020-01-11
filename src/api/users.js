@@ -88,7 +88,7 @@ class User extends Common.Model {
                     auth: {username, password},
                     save: false,
                 });
-                return response.data.api_key;
+                return response.response.data.api_key;
             default:
                 // TODO When Galaxy adds more API authentication methods, implement here
                 throw Error(method + ' authentication method not implemented');

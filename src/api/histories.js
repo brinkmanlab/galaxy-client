@@ -89,23 +89,19 @@ class History extends Common.Model {
      * Upload a file to this history
      * @param file {File} File to upload
      * @param file_type {string} Optional file type to skip sniffing
-     * @returns {Promise<HistoryDatasetAssociation>} HDA model of uploaded dataset
+     * @returns {Promise<HistoryDatasetAssociation|null>} HDA model of uploaded dataset
      */
     async fileUpload(file, file_type) {
         if (file.kind) {
             // Use DataTransferItemList interface to access the file(s)
             if (file.kind === 'file') file = file.getAsFile();
-            else return; // If dropped items aren't files, reject them
+            else return null; // If dropped items aren't files, reject them
         } // Else use DataTransfer interface to access the file(s)
         if (file)
             return await HistoryDatasetAssociation.upload(file, this.id, file_type);
     }
 
     static async fetch(options = {}) {
-        return super.fetch({params: {view: 'detailed', ...options.params}, ...options})
-    }
-
-    static async post(options = {}) {
         return super.fetch({params: {view: 'detailed', ...options.params}, ...options})
     }
 
@@ -121,62 +117,9 @@ class History extends Common.Model {
             });
         }*/
     }
-
-    async getAssociation(id) {
-        let result = HistoryDatasetAssociation.find(id);
-        if (result) return result;
-        result = HistoryDatasetCollectionAssociation.find(id);
-        if (result) return result;
-        const response = await this.request('get', {url:`${this.build_url()}contents/${id}/`});
-        result = Object.values(response.entities)[0][0];
-        return result;
-    }
 }
 
 /*class HistoryExport extends Common.Model { //TODO
-    //Vuex ORM Axios Config
-    static methodConf = {
-        http: {
-            url: '/api/histories'
-        },
-        methods: {
-            $fetch: {
-                name: 'fetch',
-                http: {
-                    url: '?view=detailed',
-                    method: 'get',
-                },
-            },
-            $get: {
-                name: 'get',
-                http: {
-                    url: '/:id',
-                    method: 'get',
-                },
-            },
-            $create: {
-                name: 'create',
-                http: {
-                    url: '?view=detailed',
-                    method: 'post',
-                },
-            },
-            $update: {
-                name: 'update',
-                http: {
-                    url: '/:id',
-                    method: 'put',
-                },
-            },
-            $delete: {
-                name: 'delete',
-                http: {
-                    url: '/:id',
-                    method: 'delete',
-                },
-            },
-        }
-    }
 }*/
 
 const Module = {

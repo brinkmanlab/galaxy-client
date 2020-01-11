@@ -74,7 +74,6 @@
         computed: {
             workflow_inputs() {
                 let inputs = [];
-                console.log(this.workflow.inputs);
                 for (const [index, input] of Object.entries(this.workflow.inputs)) {
                     const param = {index: index, uuid: input.uuid, label: input.label, type: this.workflow.steps[index].type, annotation: '', optional: false, order: 0};
                     if (this.workflow.steps[index].annotation) {

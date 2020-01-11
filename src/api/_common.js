@@ -33,10 +33,10 @@ const HasState = {
      */
     poll_state_callback(state_callback = undefined, callback = ()=>true, ...extra) {
         let self = this;
-        self = self.constructor.find(self.id); // TODO recover from the reactivity system failing
         if (state_callback === undefined) state_callback = ()=>self.state;
         if (!this.constructor.end_states.includes(state_callback())) {
             this.start_polling(()=>{
+                self = self.constructor.find(self.id); // TODO recover from the reactivity system failing
                 if (self.constructor.end_states.includes(state_callback())) {
                     return callback();
                 }
@@ -70,40 +70,38 @@ class Model extends VuexModel {
     }
 
     static async doRequest(request, config) {
-        const axiosResponse = await this.axios.request(config);
-
-        return request.createResponse(axiosResponse, config)
+        try {
+            const axiosResponse = await this.axios.request(config);
+            return request.createResponse(axiosResponse, config);
+        } catch (err) {
+            console.log(`Error: ${this.entity} failed request:`, request, config);
+            throw(err);
+        }
     }
 
     static createConfig(request, config) {
-        const c = _merge({},
+        return _merge({},
             request.config,
             request.model.globalApiConfig,
             request.model.apiConfig,
             config
         );
-        if (!c.url) c.url = this.build_url();
-        return c;
     }
 
     createConfig(request, config) {
-        const c = this.constructor.createConfig(request, config);
-        if (!c.url) c.url = this.build_url();
-        return c;
+        return this.constructor.createConfig(request, config);
     }
 
     static async request(method, config) {
-        const request = this.api();
+        const request = (this.api && this.api()) || this.constructor.api(); // Allow rebinding this to model instance
         const requestConfig = this.createConfig(request, {method, ...config});
+        if (!requestConfig.url) requestConfig.url = this.build_url();
 
-        return this.doRequest(request, requestConfig);
+        return (this.doRequest && this.doRequest(request, requestConfig)) || this.constructor.doRequest(request, requestConfig); // Allow rebinding this to model instance
     }
 
     async request(method, config) {
-        const request = this.constructor.api();
-        const requestConfig = this.createConfig(request, {method, ...config});
-
-        return this.constructor.doRequest(request, requestConfig);
+        return this.constructor.request.call(this, method, config);
     }
 
     static async post(data, options) {
@@ -174,17 +172,22 @@ class Model extends VuexModel {
         if (!window.hasOwnProperty('pollHandles')) window.pollHandles = new Map();
         if (!window.pollHandles.has(this.id)) {
             const f = ()=>{ //Make following code block passable to setTimeout
-                self.reload(options).then(() => {
-                    if (stop_criteria()) {
-                        self.stop_polling();
-                    } else {
-                        // Reschedule after reload
-                        window.pollHandles.set(self.id, setTimeout(f, interval));
-                    }
-                }).catch(()=> {
-                    // Reschedule if reload fails (possibly due to a connection error)
-                    window.pollHandles.set(self.id, setTimeout(f, interval));
-                });
+                // Prevent race condition allowing orphaned instances of f to continue polling
+                if (f.pollHandle === undefined || f.pollHandle === window.pollHandles.get(this.id)) {
+                    self.reload(options).then(() => {
+                        if (stop_criteria()) {
+                            self.stop_polling();
+                        } else {
+                            // Reschedule after reload
+                            f.pollHandle = setTimeout(f, interval);
+                            window.pollHandles.set(self.id, f.pollHandle);
+                        }
+                    }).catch(() => {
+                        // Reschedule if reload fails (possibly due to a connection error)
+                        f.pollHandle = setTimeout(f, interval);
+                        window.pollHandles.set(self.id, f.pollHandle);
+                    });
+                }
             };
             f();
         }

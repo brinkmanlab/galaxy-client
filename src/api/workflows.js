@@ -3,7 +3,7 @@
  * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.workflows
  */
 import * as Common from "./_common";
-import { HistoryDatasetAssociation, HistoryDatasetCollectionAssociation } from "./history_contents";
+import { HistoryDatasetAssociation, /*HistoryDatasetCollectionAssociation,*/ srcMap } from "./history_contents";
 import { History } from "./histories";
 import { Job } from "./jobs";
 
@@ -135,8 +135,8 @@ class WorkflowInvocation extends Common.Model {
             //ORM only
             workflow: this.belongsTo(StoredWorkflow, 'workflow_id'),
             history: this.belongsTo(History, 'history_id'),
-            output_models: this.hasManyBy(HistoryDatasetAssociation, 'outputs'),
-            output_collection_models: this.hasManyBy(HistoryDatasetCollectionAssociation, 'output_collections'),
+            output_models: this.attr({}), //this.hasManyBy(HistoryDatasetAssociation, 'outputs'), // TODO are hda and hdca mixed in outputs?
+            //output_collection_models: this.hasManyBy(HistoryDatasetCollectionAssociation, 'output_collections'),
         }
     }
 
@@ -158,6 +158,21 @@ class WorkflowInvocation extends Common.Model {
             return response.entities[this.entity];
         }
         return this.all();
+    }
+
+    static async post(workflow, data, options) {
+        const response = await this.request('post', {url: `${workflow.build_url()}${this.apiPath}`, data, ...options});
+        return response.entities[this.entity][0];
+    }
+
+    async delete(options = {}) {
+        try {
+            return await super.delete(options);
+        } catch (e) {
+            // Ignore deleting completed workflows throwing error
+            if (e.response && e.response.status === 400 && e.response.data.err_code === 0) return;
+            throw(e);
+        }
     }
 
     /**
@@ -188,6 +203,7 @@ class WorkflowInvocation extends Common.Model {
         let states = this.states();
         if (Object.entries(states).length === 0) return "new";
         if (states.new) return "running";
+        //if (states.scheduled) return "running";
         if (states.error) return "error";
         if (states.paused) return "error";
         return "done";
@@ -207,13 +223,13 @@ class WorkflowInvocation extends Common.Model {
     }
 
     async getOutputs() {
-        if (!this.history) this.history = History.findOrLoad(this.history_id);
+        const history = this.history || await History.findOrLoad(this.history_id);
         let result = {};
         for (let key of Object.keys(this.outputs)) {
-            let hda = await this.history.getAssociation(this.outputs[key].id);
-            if (hda) {
-                result[key] = hda;
-                hda.poll_state();
+            const elem = await srcMap[this.outputs[key].src].findOrLoad(this.outputs[key].id, history);
+            if (elem) {
+                result[key] = elem;
+                elem.poll_state();
             }
         }
         return result;
@@ -321,7 +337,7 @@ class StoredWorkflow extends Common.Model {
                     name: label,
                 });
             } catch (e) {
-                throw "Failed to create job history.";
+                throw "Failed to create job history";
             }
 
             // Tag the new history with the workflow id for future lookup
@@ -335,7 +351,7 @@ class StoredWorkflow extends Common.Model {
             if (input.src === 'new_collection') {
                 //Create collection of inputs in new history
                 try {
-                    response = await this.request('post', {data: {
+                    response = await HistoryDatasetAssociation.post(history, {data: {
                         name: input.name,
                         type: 'dataset_collection',
                         collection_type: this.steps[index].tool_inputs.collection_type,
@@ -345,23 +361,25 @@ class StoredWorkflow extends Common.Model {
                     inputs[index] = {id: response.id, src: 'hdca'};
                 } catch (e) {
                     history.delete();
-                    throw "Failed to create job dataset collection.";
+                    throw "Failed to create job dataset collection";
                 }
             }
         }
 
         // Invoke workflow
         try {
-            return WorkflowInvocation.post({
+            response = await WorkflowInvocation.post(this,{
                 // new_history_name: specify a new history and leave history_id: null TODO if new_collection as src above works, swap history_id for this
                 history_id: history.id,
                 no_add_to_history: true,
                 inputs: inputs,
             });
+            return response;
         } catch (e) {
             // Invocation failed, cleanup.
             history.delete();
-            throw "Failed to create job.";
+            console.log(e);
+            throw "Failed to create job";
         }
     }
 
