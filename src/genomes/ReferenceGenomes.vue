@@ -151,7 +151,7 @@
                     let genomes = Genome.query().orderBy('name').get();
                     if (genomes.length === 0) {
                         // Fetch once
-                        await Genome.$fetch();
+                        await Genome.fetch();
                         genomes = Genome.query().orderBy('name').get();
                     }
                     return genomes;

@@ -8,6 +8,7 @@
 // TODO https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.dynamic_tools
 
 import { Model as VuexModel } from '@vuex-orm/core';
+import _merge from 'lodash.merge'
 
 const HasState = {
     /**
@@ -32,10 +33,10 @@ const HasState = {
      */
     poll_state_callback(state_callback = undefined, callback = ()=>true, ...extra) {
         let self = this;
-        self = self.constructor.find(self.id); // TODO recover from the reactivity system failing
         if (state_callback === undefined) state_callback = ()=>self.state;
         if (!this.constructor.end_states.includes(state_callback())) {
             this.start_polling(()=>{
+                self = self.constructor.find(self.id); // TODO recover from the reactivity system failing
                 if (self.constructor.end_states.includes(state_callback())) {
                     return callback();
                 }
@@ -44,7 +45,6 @@ const HasState = {
         }
     },
 };
-
 
 /**
  * Base class for API models
@@ -57,12 +57,69 @@ class Model extends VuexModel {
     }
 
     /**
-     * Update model state on the Galaxy server. Wraps $update() with model instance params.
-     * @param fields {Array} Optional Array of strings containing field names to update
-     * @param options {Object} Options to pass to $update()
-     * @returns {Promise<Collections<Model>>} result of $update()
+     * Build base url for model instance specific api endpoint.
+     * Models that require other model information in their api url will override this function.
+     * @returns {string} Base url for model api endpoint
      */
-    async post(fields, options={}) {
+    build_url() {
+        return `${this.constructor.build_url()}${this[this.constructor.primaryKey]}/`;
+    }
+
+    static build_url() {
+        return this.apiPath;
+    }
+
+    static async doRequest(request, config) {
+        try {
+            const axiosResponse = await this.axios.request(config);
+            return request.createResponse(axiosResponse, config);
+        } catch (err) {
+            console.log(`Error: ${this.entity} failed request:`, request, config);
+            throw(err);
+        }
+    }
+
+    static createConfig(request, config) {
+        return _merge({},
+            request.config,
+            request.model.globalApiConfig,
+            request.model.apiConfig,
+            config
+        );
+    }
+
+    createConfig(request, config) {
+        return this.constructor.createConfig(request, config);
+    }
+
+    static async request(method, config) {
+        const request = (this.api && this.api()) || this.constructor.api(); // Allow rebinding this to model instance
+        const requestConfig = this.createConfig(request, {method, ...config});
+        if (!requestConfig.url) requestConfig.url = this.build_url();
+
+        return (this.doRequest && this.doRequest(request, requestConfig)) || this.constructor.doRequest(request, requestConfig); // Allow rebinding this to model instance
+    }
+
+    async request(method, config) {
+        return this.constructor.request.call(this, method, config);
+    }
+
+    static async post(data, options) {
+        const response = await this.request("post", {data, ...options});
+
+        if (response.entities) {
+            return response.entities[this.entity][0]; // There should only be one
+        }
+        return null;
+    }
+
+    /**
+     * Update model state on the Galaxy server. Wraps api().put() with model instance params.
+     * @param fields {Array} Optional Array of strings containing field names to update
+     * @param options {Object} Options to pass to put()
+     * @returns {Promise<Response>} result of api().put()
+     */
+    async put(fields, options={}) {
         let data = this;
         if (fields !== undefined) {
             //Only keep requested fields
@@ -72,63 +129,33 @@ class Model extends VuexModel {
         }
         if (data.hasOwnProperty('$toJson')) data = data.$toJson();
         else data = JSON.stringify(data);
-        return await this.constructor.$update({
-            ...options,
-            params: {
-                id: this[this.constructor.primaryKey],
-                url: this.get_base_url(),
-                ...options.params,
-            },
-            data: data,
-        });
+
+        return this.request('put', {data, ...options});
     }
 
     // TODO find all places this can be used and replace code
     /**
-     * Update model state from Galaxy server. Wraps $get() with model instance params.
+     * Update model state from Galaxy server. Wraps api().get() with model instance params.
      * @param options {Object} Options to pass to $get
      * @returns {Promise<*>} result of $get()
      */
     async reload(options={}) {
-        return await this.constructor.$get({
-            ...options,
-            params: {
-                url: this.get_base_url(),
-                id: this.id,
-                ...options.params,
-            },
-        });
+        return this.request('get', options);
     }
 
     /**
      * Delete model on Galaxy server. Wraps $delete() with model instance params.
      * @param options {Object} Options to pass to $delete()
-     * @returns {Promise<*>} result of $delete()
+     * @returns {Promise<*>} result of delete()
      */
     async delete(options = {}) {
         this.stop_polling();
         if (this.hid === -1) {
             //Delete locally if ghost item
-            this.constructor.delete(this.id);
-            return;
+            return this.constructor.delete(this[this.constructor.primaryKey]);
         }
-        this.constructor.delete(this.id); // TODO this shouldn't be needed, the next command calls it but fails
-        return await this.constructor.$delete({
-            ...options,
-            params: {
-                id: this[this.constructor.primaryKey],
-                ...options.params,
-            },
-        });
-    }
 
-    /**
-     * Build base url for model instance specific api endpoint.
-     * Models that require other model information in their api url will override this function.
-     * @returns {string} Base url for model api endpoint
-     */
-    get_base_url() {
-        return '';
+        return this.request('delete', {...options, delete: this[this.constructor.primaryKey]})
     }
 
     /**
@@ -145,17 +172,22 @@ class Model extends VuexModel {
         if (!window.hasOwnProperty('pollHandles')) window.pollHandles = new Map();
         if (!window.pollHandles.has(this.id)) {
             const f = ()=>{ //Make following code block passable to setTimeout
-                self.reload(options).then(() => {
-                    if (stop_criteria()) {
-                        self.stop_polling();
-                    } else {
-                        // Reschedule after reload
-                        window.pollHandles.set(self.id, setTimeout(f, interval));
-                    }
-                }).catch(()=> {
-                    // Reschedule if reload fails (possibly due to a connection error)
-                    window.pollHandles.set(self.id, setTimeout(f, interval));
-                });
+                // Prevent race condition allowing orphaned instances of f to continue polling
+                if (f.pollHandle === undefined || f.pollHandle === window.pollHandles.get(this.id)) {
+                    self.reload(options).then(() => {
+                        if (stop_criteria()) {
+                            self.stop_polling();
+                        } else {
+                            // Reschedule after reload
+                            f.pollHandle = setTimeout(f, interval);
+                            window.pollHandles.set(self.id, f.pollHandle);
+                        }
+                    }).catch(() => {
+                        // Reschedule if reload fails (possibly due to a connection error)
+                        f.pollHandle = setTimeout(f, interval);
+                        window.pollHandles.set(self.id, f.pollHandle);
+                    });
+                }
             };
             f();
         }
@@ -187,22 +219,26 @@ class Model extends VuexModel {
     /**
      * Find model with specified id, or get it from the Galaxy server
      * @param id Model id
-     * @param url {string} Optional base url for model api
-     * @param options {Object} Options to pass to $get
+     * @param options {Object} Options to pass to api().get()
      * @returns {Promise<Model|null>} model instance if the id is found or null
      */
-    static async findOrLoad(id, url='', options={}) {
+    static async findOrLoad(id, options={}) {
         const result = this.find(id);
         if (result) return result;
-        await this.$get({
-            ...options,
-            params: {
-                id: id,
-                url: url,
-                ...options.params,
-            },
-        });
+
+        const response = await this.request('get', options);
+        if (response.entities) {
+            return response.entities[this.entity][0]; // There should only be one
+        }
         return this.find(id);
+    }
+
+    static async fetch(options) {
+        const response = await this.request('get', options);
+        if (response.entities) {
+            return response.entities[this.entity];
+        }
+        return this.all();
     }
 
     /**

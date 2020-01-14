@@ -16,7 +16,7 @@
                     </b-progress>
                 </span>
             </template>
-            <template v-slot:functions="slot">
+            <template v-slot:functions>
                 <slot name="functions" v-bind="self" />
                 <ErrorInfo v-if="states.error" v-bind:item="self" v-on="$listeners"/>
             </template>
@@ -26,9 +26,10 @@
 
 <script>
     import History from "../histories/History";
-    import ErrorInfo from "@/galaxy/src/workflows/WorkflowInvocationFunctions/ErrorInfo";
-    import {WorkflowInvocation} from "@/galaxy/src/api/workflows";
-    import {HistoryDatasetAssociation} from "@/galaxy/src/api/history_contents";
+    import ErrorInfo from "../workflows/WorkflowInvocationFunctions/ErrorInfo";
+    import {WorkflowInvocation} from "../api/workflows";
+    import {srcMap} from "../api/history_contents";
+
     export default {
         name: "WorkflowInvocation",
         components: {
@@ -79,31 +80,28 @@
                 return this.model.aggregate_state();
             },
             done() {
-                return this.outputs && Object.entries(this.outputs).length && Object.values(this.outputs).every(o => o.state === 'ok');
+                const models = Object.values(this.outputs);
+                return models.length > 0 && models.every(o => o.state === 'ok');
             },
+            outputs() {
+                return Object.entries(this.model.outputs).reduce((acc, [key, output])=>{
+                    const found = srcMap[output.src].find(output.id);
+                    if (found) acc[key] = found;
+                    return acc;
+                }, {});
+            }
         },
-        asyncComputed: {
-            outputs: {
-                async get() {
-                    let result = {};
-                    if (this.model === null) return {};
-                    for (let key of Object.keys(this.model.outputs)) {
-                        let hda = await HistoryDatasetAssociation.findOrLoad(this.model.outputs[key].id, this.model.history.get_contents_url());
-                        if (hda) {
-                            result[key] = hda;
-                            hda.poll_state();
-                        }
-                    }
-                    return result;
-                },
-                default: {},
-            },
-        },
-        mounted() {
+        created() {
+            // Get outputs of workflow already complete
+            this.model.getOutputs();
+            // Poll the aggregate state of the model
             this.model.poll_state_callback(this.model.aggregate_state.bind(this.model), ()=>{
                 this.$emit('workflow-completed', this);
                 if (this.states.pending) console.log(this.model);
-            }, {query: {view: "element", step_details: true}})
+
+                // Poll outputs upon completion
+                this.model.getOutputs();
+            }, {params: {view: "element", step_details: true}});
         },
         beforeDestroy() {
             if (this.model)

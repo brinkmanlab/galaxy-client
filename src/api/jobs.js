@@ -2,13 +2,10 @@
  * Code responsible for interacting with /api/jobs
  * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.jobs
  * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.job_files
- * TODO not implemented
  */
 import * as Common from "./_common";
 import {History} from "./histories";
 import {HistoryDatasetAssociation} from "./history_contents";
-
-import axios from "axios";
 
 /**
  * Model representing a invocation of a tool
@@ -17,6 +14,7 @@ class Job extends Common.Model {
     static entity = 'Jobs';
     static primaryKey = 'id';
     static end_states = ['ok', 'error', 'deleted', 'deleted_new'];
+    static apiPath = '/api/jobs/';
 
     static fields() {
         return {
@@ -86,11 +84,11 @@ class Job extends Common.Model {
         for (const [key, val] of Object.entries(self.outputs)) {
             switch (val.src) {
                 case 'hda': {
-                    const hda = await HistoryDatasetAssociation.findOrLoad(val.id, self.history.get_contents_url());
+                    const hda = await HistoryDatasetAssociation.findOrLoad(val.id, self.history);
                     if (hda.state === 'error') {
                         log += `${label} on ${input_identifier} - ${key}: ${hda.misc_info}\n`;
                         // TODO move to Dataset model
-                        const response = await axios.get('/datasets/' + hda.id + '/stderr', {...this.constructor.methodConf.http, responseType: 'text'});
+                        const response = await this.constructor.get('/datasets/' + hda.id + '/stderr', {responseType: 'text', save: false});
                         if (response.data) log += response.data + '\n';
                     }
                     break;
@@ -104,50 +102,6 @@ class Job extends Common.Model {
             }
         }
         return log;
-    }
-
-    //Vuex ORM Axios Config
-    static methodConf = {
-        http: {
-            url: '/api/jobs'
-        },
-        methods: {
-            $fetch: {
-                name: 'fetch',
-                http: {
-                    url: '',
-                    method: 'get',
-                },
-            },
-            $get: {
-                name: 'get',
-                http: {
-                    url: '/:id',
-                    method: 'get',
-                },
-            },
-            //$create: {
-            //    name: 'create',
-            //    http: {
-            //        url: '', //TODO
-            //        method: 'post',
-            //    },
-            //},
-            //$update: {
-            //    name: 'update',
-            //    http: {
-            //        url: '/:id', //TODO
-            //        method: 'put',
-            //    },
-            //},
-            //$delete: {
-            //    name: 'delete',
-            //    http: {
-            //        url: '/:id', //TODO
-            //        method: 'delete',
-            //    },
-            //},
-        }
     }
 }
 

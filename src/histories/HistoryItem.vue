@@ -65,7 +65,7 @@
              */
             update_label(value) {
                 this.model.name = value;
-                this.model.post(['name']);
+                this.model.put(['name']);
             }
         },
         mounted() {

@@ -1,9 +1,9 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
     <div class="galaxy-history">
-        <EditableLabel class="galaxy-history-label" @update="update_label" v-bind:value="model.name" placeholder="Enter a label" ref="label"></EditableLabel>
+        <EditableLabel class="galaxy-history-label" @update="update_label" v-bind:value="model.name" placeholder="Enter a label" ref="label"/>
         <span class="galaxy-history-state">{{ model.state }}</span>
         <time class="galaxy-history-updated" v-bind:datetime="model.update_time">{{ (new Date(model.update_time)).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' }) }}</time>
-        <slot v-bind:model="model" class="galaxy_history_slot"></slot>
+        <slot v-bind:model="model" class="galaxy_history_slot"/>
         <HistoryFunctions v-bind:item="self">
             <template v-slot:default="slot">
                 <slot name="functions" v-bind="self" />
@@ -48,10 +48,10 @@
              */
             update_label(value) {
                 this.model.name = value;
-                this.model.post(['name']);
+                this.model.put(['name']);
             },
         },
-        mounted() {
+        created() {
             const self = this;
             // Poll state if pending items
             this.model.poll_state(()=>{self.$emit('history-completed', self); return true;});

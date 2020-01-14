@@ -8,7 +8,6 @@
  *
  */
 import * as Common from "./_common";
-import axios from "axios";
 
 /**
  * Model representing a Galaxy user
@@ -16,6 +15,7 @@ import axios from "axios";
 class User extends Common.Model {
     static entity = 'Users';
     static primaryKey = 'id';
+    static apiPath = '/api/users/';
 
     static fields() {
         return {
@@ -41,12 +41,8 @@ class User extends Common.Model {
      * @returns {Promise<User|null>}
      */
     static async getCurrent() {
-        let response = await this.$get({
-            params: {
-                id: 'current',
-            }
-        });
-        return this.find(response.id);
+        let response = await this.request('get', {url: this.constructor.build_url() + "current"});
+        return response.entities[this.entity][0];
     }
 
     /**
@@ -54,38 +50,15 @@ class User extends Common.Model {
      * @param username Username of the new user
      * @param password Password for the new user
      * @param email Email of the new user
-     * @returns {Promise<void>} null
+     * @returns {Promise<User>} User instance
      */
     static async registerUser(username, password, email) {
-        /*// TODO This is a total hack until user registration is enabled via the API
-        const htmlconf = {...this.methodConf.http, responseType: 'text'};
-        let response = await axios.get('/root/login', htmlconf); // Non-api endpoint :(
-        let csrf = response.data.match(/"session_csrf_token": "(\w+)"/);
-        if (!csrf || !csrf[1]) throw Error('CSRF token could not be found');
-        csrf = csrf[1];
-
-        response = await axios.post('/user/create', { // Non-api endpoint :(
-            "disableCreate": true,
-            "email": email,
-            "password": password,
-            "username": username,
-            "confirm": password,
-            "subscribe": null,
-            "messageText": "",
-            "messageVariant": "danger",
-            "session_csrf_token": csrf,
-            "isAdmin": false
-        }, this.methodConf.http);*/
         // TODO This requires patching galaxy/webapps/galaxy/api/users.py#UserAPIController.create to enable anyone to create a user
-        await this.$create({
-           data: {
-               username,
-               password,
-               email,
-           }
+        return this.post({
+           username,
+           password,
+           email,
         });
-
-        //TODO return user model
     }
 
     // TODO GET /api/users/deleted Displays a collection (list) of deleted users.
@@ -111,11 +84,11 @@ class User extends Common.Model {
         let response;
         switch (method) {
             case 'baseauth':
-                response = await axios.get('/api/authenticate/baseauth', {
-                    ...this.methodConf.http,
-                    auth: {username, password}
+                response = await this.api().get('/api/authenticate/baseauth', {
+                    auth: {username, password},
+                    save: false,
                 });
-                return response.data.api_key;
+                return response.response.data.api_key;
             default:
                 // TODO When Galaxy adds more API authentication methods, implement here
                 throw Error(method + ' authentication method not implemented');
@@ -131,65 +104,21 @@ class User extends Common.Model {
         // TODO centralise all network error handling and recovery
         for (let i = 0; i < 40; ++i) { // Retry 40 times (20 seconds)
             try {
-                await axios.get('/api/whoami', {
-                    ...this.methodConf.http,
+                await this.api().get('/api/whoami', {
                     params: {
                         key,
-                    }
+                    },
+                    save: false,
                 });
                 return true;
             } catch (error) {
                 // Galaxy returns 403 when unauthenticated
                 if (error.response.status === 403) return false;
                 // Retry request for all other errors after delay
-                await new Promise(r => setTimeout(r, 500));
+                await new Promise(r => setTimeout(r, 1000));
             }
         }
         throw Error("Unable to connect to backend");
-    }
-
-    //Vuex ORM Axios Config
-    static methodConf = {
-        http: {
-            url: '/api/users'
-        },
-        methods: {
-            $fetch: {
-                name: 'fetch',
-                http: {
-                    url: '',
-                    method: 'get',
-                },
-            },
-            $get: {
-                name: 'get',
-                http: {
-                    url: '/:id',
-                    method: 'get',
-                },
-            },
-            $create: {
-                name: 'create',
-                http: {
-                    url: '',
-                    method: 'post',
-                },
-            },
-            $update: {
-                name: 'update',
-                http: {
-                    url: '/:id',
-                    method: 'put',
-                },
-            },
-            $delete: {
-                name: 'delete',
-                http: {
-                    url: '/:id',
-                    method: 'delete',
-                },
-            },
-        }
     }
 }
 
