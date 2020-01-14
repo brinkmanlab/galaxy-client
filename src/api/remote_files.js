@@ -4,6 +4,7 @@
  * TODO not implemented, should this even have a model?
  */
 throw Error('Not Implemented');
+/* eslint-disable no-unreachable */
 import * as Common from "./_common";
 
 
