@@ -3,8 +3,8 @@
 </template-->
 
 <script>
-    import FunctionIcon from "@/galaxy/src/misc/FunctionIcon";
-    import HistoryItem from "@/galaxy/src/histories/HistoryItem";
+    import FunctionIcon from "../../misc/FunctionIcon";
+    import HistoryItem from "../../histories/HistoryItem";
 
     /**
      * Rename history item button

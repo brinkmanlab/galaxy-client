@@ -49,11 +49,9 @@
 </template>
 
 <script>
-    import WorkflowParameter from "./WorkflowParameter";
-
     export default {
         name: "WorkflowParameters",
-        components: {WorkflowParameter},
+        components: {WorkflowParameter: ()=>import("./WorkflowParameter")},
         props: {
             workflowPromise: {
                 type: Promise,

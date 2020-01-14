@@ -46,7 +46,7 @@
 </template>
 
 <script>
-    import { Genome } from "@/galaxy/src/api/genomes";
+    import { Genome } from "../api/genomes";
 
     /**
      * Selectable list of reference genomes available from /api/genomes

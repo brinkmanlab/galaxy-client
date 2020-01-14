@@ -4,7 +4,7 @@
 
 <script>
     import FunctionIcon from '../../misc/FunctionIcon';
-    import History from "@/galaxy/src/histories/History";
+    import History from "../../histories/History";
 
     /**
      * Remove button for History
