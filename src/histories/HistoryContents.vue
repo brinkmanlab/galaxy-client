@@ -222,7 +222,7 @@
                  
                  // No next match found
                  this.search_target = null;
-             }
+             },
 
             /**
              * Handle upload events
@@ -280,7 +280,7 @@
                     return false;
                 }
                 return true;
-            }
+            },
 
             /**
              *  Clear selection
