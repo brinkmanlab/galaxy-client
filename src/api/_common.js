@@ -150,12 +150,15 @@ class Model extends VuexModel {
      */
     async delete(options = {}) {
         this.stop_polling();
+
+        //Delete locally first
+        const result = this.constructor.delete(this[this.constructor.primaryKey]);
         if (this.hid === -1) {
-            //Delete locally if ghost item
-            return this.constructor.delete(this[this.constructor.primaryKey]);
+            //If ghost item, return
+            return result;
         }
 
-        return this.request('delete', {...options, delete: this[this.constructor.primaryKey]})
+        return this.request('delete', options);
     }
 
     /**
