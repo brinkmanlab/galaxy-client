@@ -27,17 +27,17 @@ const HasState = {
 
     /**
      * Poll state_callback until it is an end_state
-     * @param state_callback Callback that must return a string containing the models state
+     * @param state_callback Callback that must return a string containing the models state, the callback receives the model as a parameter
      * @param callback Called when state changes to end_state, return true to stop polling, false to continue
      * @param extra Additional parameters passed to Model.start_polling()
      */
     poll_state_callback(state_callback = undefined, callback = ()=>true, ...extra) {
         let self = this;
-        if (state_callback === undefined) state_callback = ()=>self.state;
-        if (!this.constructor.end_states.includes(state_callback())) {
+        if (state_callback === undefined) state_callback = self=>self.state;
+        if (!this.constructor.end_states.includes(state_callback(self))) {
             this.start_polling(()=>{
-                self = self.constructor.find(self.id); // TODO recover from the reactivity system failing
-                if (self.constructor.end_states.includes(state_callback())) {
+                self = self.constructor.find(self[self.constructor.primaryKey]); // TODO recover from the reactivity system failing, this doesn't recover relationships
+                if (self.constructor.end_states.includes(state_callback(self))) {
                     return callback();
                 }
                 return false;

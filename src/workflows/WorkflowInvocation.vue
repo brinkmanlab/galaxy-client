@@ -95,12 +95,13 @@
             // Get outputs of workflow already complete
             this.model.getOutputs();
             // Poll the aggregate state of the model
-            this.model.poll_state_callback(this.model.aggregate_state.bind(this.model), ()=>{
+            this.model.poll_state_callback(model=>model.aggregate_state(), ()=>{
                 this.$emit('workflow-completed', this);
                 if (this.states.pending) console.log(this.model);
 
                 // Poll outputs upon completion
                 this.model.getOutputs();
+                return true;
             }, {params: {view: "element", step_details: true}});
         },
         beforeDestroy() {

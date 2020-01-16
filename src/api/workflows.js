@@ -51,20 +51,19 @@ class WorkflowInvocationStep extends Common.Model {
      * @returns {Object<Number>} Mapping of {state name: count, ...}
      */
     states() {
-        let tmp = {};
-        if (!this.jobs.length) {
-            tmp[this.state] = 1;
-            return tmp;
+        if (!this.jobs || !this.jobs.length) this.jobs = Job.query().where('workflow_invocation_step_id', this.id).get();
+        if (!this.jobs || !this.jobs.length) {
+            return {[this.state]: 1};
         }
         return this.jobs.reduce((acc, cur) => {
             //Count the number of jobs for each state
             acc[cur.state] = (acc[cur.state] || 0) + 1;
-            return acc
-        }, tmp);
+            return acc;
+        }, {});
     }
 
     /**
-     * Helper to aggregate the overall state of a invocation.
+     * Helper to aggregate the overall state of a invocation step.
      * @returns {string} Name of current aggregate state
      */
     aggregate_state() {
@@ -180,10 +179,11 @@ class WorkflowInvocation extends Common.Model {
      * @returns {Object<Number>} Mapping of state name to count
      */
     states() {
-        let tmp = {};
-        if (!this.steps) {
-            tmp[this.state] = 1;
-            return tmp;
+        if (!this.steps || !this.steps.length) {
+            this.steps = WorkflowInvocationStep.query().where('workflow_invocation_id', this.id).get();
+        }
+        if (!this.steps || !this.steps.length) {
+            return {[this.state]: 1};
         }
         //Count the number of jobs/steps for each state
         return this.steps.reduce((acc, step) => {
@@ -191,7 +191,7 @@ class WorkflowInvocation extends Common.Model {
                 acc[state] = (acc[state] || 0) + count;
             });
             return acc;
-        }, tmp);
+        }, {});
     }
 
     /**
@@ -200,10 +200,10 @@ class WorkflowInvocation extends Common.Model {
      */
     aggregate_state() {
         if (this.state === "cancelled" || this.state === 'failed') return this.state;
-        let states = this.states();
+        const states = this.states();
         if (Object.entries(states).length === 0) return "new";
         if (states.new) return "running";
-        //if (states.scheduled) return "running";
+        if (states.queued) return "running";
         if (states.error) return "error";
         if (states.paused) return "error";
         return "done";
@@ -245,7 +245,7 @@ class WorkflowInvocation extends Common.Model {
             if (id) {
                 let data = response.data;
                 if (!(data instanceof Array)) data = [data];
-                for (let datum of data) {
+                for (const datum of data) {
                     datum.workflow_id = id[1];
                 }
             }
@@ -254,7 +254,7 @@ class WorkflowInvocation extends Common.Model {
             if (Array.isArray(response.data)) {
                 response.data.forEach(invocation =>{
                     if (invocation.hasOwnProperty('steps')) invocation.steps.forEach(step => {
-                        step.workflow_invocation_id = response.data.id;
+                        step.workflow_invocation_id = invocation.id;
                         if (step.jobs) {
                             step.jobs.forEach(job => {
                                 job.workflow_invocation_step_id = step.id;
@@ -308,6 +308,7 @@ class StoredWorkflow extends Common.Model {
 
             //ORM only
             invocations: this.hasMany(WorkflowInvocation, 'workflow_id'),
+            invocationsFetched: this.boolean(false),
         }
     }
 
@@ -391,29 +392,21 @@ class StoredWorkflow extends Common.Model {
      * @returns {Promise<Collection<WorkflowInvocation>>} Array of all invocations
      */
     async fetch_invocations(histories) {
+        let result;
         if (histories) {
             // Fetch each invocation individually by history id
-            await Promise.all(histories.map(history=>{
+            result = (await Promise.all(histories.map(history => {
                 return WorkflowInvocation.fetch(this, {
                     params: {view: "element", step_details: true, history_id: history.id}
                 })
-            }));
+            }))).flat();
         } else {
-            await WorkflowInvocation.fetch({
+            result = await WorkflowInvocation.fetch({
                 params: {view: "element", step_details: true}
             });
         }
-
-        return this.get_invocations_query();
-    }
-
-    /**
-     * Query currently loaded invocations
-     * @returns
-     */
-    get_invocations_query() {
-        // TODO this.invocations should be reactive and not need this function
-        return WorkflowInvocation.query().where('workflow_id', this.id).whereHas('history', q => q.where('deleted', false)).with('history|workflow|steps.jobs');
+        this.constructor.update({where: this[this.constructor.primaryKey], data: {invocationsFetched: true}});
+        return result;
     }
 }
 
