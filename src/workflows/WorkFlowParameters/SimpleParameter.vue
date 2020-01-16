@@ -3,24 +3,22 @@
         <!-- Boolean -->
         <b-form-radio-group v-if="this.type === 'boolean'" buttons
                             v-bind:state="validation_message ? 'invalid' : null"
+                            v-model="user_input"
+                            @input="onInput"
         >
             <option value="true">Yes</option>
             <option value="false">No</option>
             <b-form-invalid-feedback>{{validation_message}}</b-form-invalid-feedback>
         </b-form-radio-group>
-        <!-- Select -->
-        <b-form-group v-else-if="this.type === 'select'"
-                      v-bind:invalid-feedback="validation_message"
-                      v-bind:state="validation_message ? 'invalid' : null"
-        >
-            <b-form-select v-model="user_input" :options="select_options" />
-        </b-form-group>
-        <!-- Text, Integer, Float, Color -->
         <b-form-group v-else
                       v-bind:invalid-feedback="validation_message"
                       v-bind:state="validation_message ? 'invalid' : null"
         >
-            <b-form-input v-bind:type="form_type" v-bind:number="form_type === 'number'" v-model="user_input"/>
+            <!-- Select -->
+            <b-form-select v-if="this.type === 'select'" v-model="user_input" :options="select_options" @input="onInput"/>
+
+            <!-- Text, Integer, Float, Color -->
+            <b-form-input v-else v-bind:type="form_type" v-bind:number="form_type === 'number'" v-model="user_input" ref="input" @input="onInput"/>
         </b-form-group>
     </WorkflowParameterBase>
 </template>
@@ -89,12 +87,15 @@
             },
         },
         methods: {
+            onInput(value) {
+                this.$emit('input', value);
+            },
             setCustomValidity(message){
                 /* Sets a custom validity message for the element. If this message is not the empty string,
                 then the element is suffering from a custom validity error, and does not validate.
                  */
                 this.validation_message = message;
-                if (this.type !== 'boolean') this.$refs.input.setCustomValidity(message);
+                if (!['boolean', 'select'].includes(this.type)) this.$refs.input.setCustomValidity(message);
             },
             checkValidity() {
                 /* Returns a Boolean that is false if the element is a candidate for constraint validation,
@@ -102,7 +103,7 @@
                 It returns true if the element is not a candidate for constraint validation, or if it satisfies
                 its constraints.
                  */
-                if (this.type === 'boolean') return true; // If a boolean value has only one valid state, why does it exist?
+                if (['boolean', 'select'].includes(this.type)) return true; // If a boolean value has only one valid state, why does it exist?
                 else return this.$refs.input.checkValidity();
             },
             reportValidity() {
@@ -110,12 +111,16 @@
                 attribute provided), then it reports to the user that the input is invalid in the same manner
                 as if you submitted a form.
                  */
-                if (this.type !== 'boolean') this.$refs.input.reportValidity();
+                if (!['boolean', 'select'].includes(this.type)) return this.$refs.input.reportValidity();
+                return true;
+            },
+            reset() {
+                this.user_input = this.value;
             },
         },
         mounted() {
             // Emit the default value if optional
-
+            this.$emit('input', this.value);
         }
     }
 </script>
