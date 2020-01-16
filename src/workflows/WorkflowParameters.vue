@@ -78,7 +78,11 @@
                         // TODO Temporary until https://github.com/galaxyproject/galaxy/issues/7496
                         // TODO Temporary until galaxy has native support for optional workflow inputs
                         try {
-                            Object.assign(param, JSON.parse(this.workflow.steps[index].annotation));
+                            // Unescape entities
+                            const txt = document.createElement("textarea");
+                            txt.innerHTML = this.workflow.steps[index].annotation;
+                            const annotation = txt.value;
+                            Object.assign(param, JSON.parse(annotation));
                             if (param.subinputs && param.subinputs.length) {
                                 let i = 0;
                                 for (; i < param.subinputs.length - 1; ++i) {
@@ -92,7 +96,10 @@
                     }
                     inputs.push(param);
                 }
-                inputs = inputs.sort((a,b)=>(a.order || 0) - (b.order || 0));
+                inputs = inputs.sort((a,b)=>(a.order || 0) - (b.order || 0)).map(input=>{
+                    if (input.validator) input.validator = new Function('selection', 'return ' + input.validator); // TODO collection inputs really need a validator criteria
+                    return input;
+                });
                 return inputs;
             },
         },

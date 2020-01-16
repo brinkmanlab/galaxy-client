@@ -175,7 +175,7 @@
                     }
                 }
                 if (this.optional && !this.selection) return true;
-                this.validation_message = this.validator(this.selection);
+                this.validation_message = this.validator(this.selected_models);
                 return this.validation_message === '';
             },
             reset() {
