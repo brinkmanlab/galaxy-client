@@ -1,5 +1,5 @@
 <template>
-    <WorkflowParameterBase class="galaxy-workflow-parameter-simple" v-bind="{...$attrs, ...$props}" :validation_message="validation_message">
+    <WorkflowParameterBase class="galaxy-workflow-parameter-simple" v-bind="{...$attrs, ...$props, optional: ['select'].includes(type) || optional, collapse: ['select'].includes(type) || $attrs.collapse}" :validation_message="validation_message">
         <!-- Boolean -->
         <b-form-radio-group v-if="this.type === 'boolean'" buttons
                             v-bind:state="validation_message ? 'invalid' : null"
@@ -10,8 +10,6 @@
         </b-form-radio-group>
         <!-- Select -->
         <b-form-group v-else-if="this.type === 'select'"
-                      v-bind:label="label"
-                      v-bind:description="annotation"
                       v-bind:invalid-feedback="validation_message"
                       v-bind:state="validation_message ? 'invalid' : null"
         >
@@ -19,8 +17,6 @@
         </b-form-group>
         <!-- Text, Integer, Float, Color -->
         <b-form-group v-else
-                      v-bind:label="label"
-                      v-bind:description="annotation"
                       v-bind:invalid-feedback="validation_message"
                       v-bind:state="validation_message ? 'invalid' : null"
         >
@@ -31,6 +27,7 @@
 
 <script>
     import WorkflowParameterBase from "../WorkflowParameterBase";
+
     export default {
         name: "SimpleParameter",
         components: {WorkflowParameterBase},
@@ -56,7 +53,7 @@
                 default: false,
             },
             options: {
-                type: Array || Object,
+                validator(prop) {return prop instanceof Array || prop instanceof Object},
                 default: [],
             }
         },
@@ -85,8 +82,8 @@
                 else
                     // The way bootstrap maps keys to the value of the select is stupid. You can't have multiple options map to the same value.
                     // Remap object k:v to list of entries
-                    return Object.entries(this.options).reduce((cur, acc)=>{
-                        acc.push({text: cur[0], value: cur[1], disabled: false});
+                    return Object.entries(this.options).reduce((acc, [text, value])=>{
+                        acc.push({text, value, disabled: false});
                         return acc;
                     }, []);
             },
@@ -124,5 +121,7 @@
 </script>
 
 <style scoped>
-
+    .form-group {
+        margin-bottom: 0;
+    }
 </style>

@@ -13,7 +13,7 @@
                     ref="param"
     />
     <!-- Simple parameter -->
-    <SimpleParameter v-else-if="type === 'parameter_input'"
+    <SimpleParameter v-else-if="['select', 'boolean', 'text', 'integer', 'float', 'color'].includes(type)"
                      v-bind="{...$attrs, ...$props}"
                      @input="onInput"
                      ref="param"
