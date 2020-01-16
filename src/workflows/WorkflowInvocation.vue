@@ -5,7 +5,8 @@
                 v-bind:model="model.history"
                 @galaxy-history-deleted="history_deleted"
         >
-            <template v-slot="">
+            <template v-slot="history">
+                <slot :history="history" :invocation="this" />
                 <span class="galaxy-workflow-invocation-state" v-bind:class="state">{{ state_label(state) }}</span>
                 <span class="galaxy-workflow-invocation-progress" v-bind:class="state">
                     <b-progress class="w-100" v-bind:max="step_count()">
@@ -15,6 +16,7 @@
                         <b-progress-bar variant="info" v-bind:animated="false" v-bind:value="(states['new'] || 0) + (states['queued'] || 0)" :title="progress_label('new')">{{progress_label('new')}}</b-progress-bar>
                     </b-progress>
                 </span>
+                <slot name="end" :history="history" :invocation="this" />
             </template>
             <template v-slot:functions>
                 <slot name="functions" v-bind="self" />
