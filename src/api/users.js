@@ -113,7 +113,7 @@ class User extends Common.Model {
                 return true;
             } catch (error) {
                 // Galaxy returns 403 when unauthenticated
-                if (error.response.status === 403) return false;
+                if (error.response && error.response.status === 403) return false;
                 // Retry request for all other errors after delay
                 await new Promise(r => setTimeout(r, 1000));
             }
