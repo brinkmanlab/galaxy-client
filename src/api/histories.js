@@ -73,6 +73,7 @@ class History extends Common.Model {
             //ORM only
             datasets: this.hasMany(HistoryDatasetAssociation, 'history_id'),
             collections: this.hasMany(HistoryDatasetCollectionAssociation, 'history_id'),
+            contentsFetched: this.boolean(false),
         }
     }
 
@@ -116,6 +117,7 @@ class History extends Common.Model {
                 }
             });
         }*/
+        this.constructor.update({where: this[this.constructor.primaryKey], data: {contentsFetched: true}});
     }
 }
 

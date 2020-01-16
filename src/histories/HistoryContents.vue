@@ -104,7 +104,7 @@
         },
         props: {
             /**
-             * Asynchronously loaded history model
+             * History model
              */
             history: {
                 type: History,
@@ -162,7 +162,7 @@
              * Asset loading state
              */
             isLoading() {
-                return this.history === null;
+                return this.history === null || !this.history.contentsFetched;
             }
         },
         methods: {
