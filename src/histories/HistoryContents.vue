@@ -106,8 +106,8 @@
             /**
              * Asynchronously loaded history model
              */
-            historyPromise: {
-                type: Promise,
+            history: {
+                type: History,
                 required: true,
             },
 
@@ -143,12 +143,6 @@
             search: '',
             search_target: null,
         }},
-        asyncComputed: {
-            /**
-             * History model instance
-             */
-            history() { return this.historyPromise },
-        },
         computed: {
             /**
              * Aggregate all history items, filter, sort, and transform for b-table
@@ -157,9 +151,8 @@
             items() {
                 if (this.history === null || this.upload_dragging) return [];
                 //TODO when features available replace concat with v-for..of or model.morphTo(element property)
-                const history = History.query().with('datasets.history').find(this.history.id); // TODO the reactivity system fails to update if .with(datasets) in historyPromise
-                return history.datasets
-                    .concat(history.collections)
+                return this.history.datasets
+                    .concat(this.history.collections)
                     .filter(item=>!item.deleted && this.filter(item)) //TODO make deleted optional, needs ui control
                     .sort((a,b)=>(a.hid === 0)?-1:b.hid-a.hid)
                     .reduce((acc, cur)=>{acc.push({item: cur, hid: cur.hid, key: cur.id}); return acc;}, []);

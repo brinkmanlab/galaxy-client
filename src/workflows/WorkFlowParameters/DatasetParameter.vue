@@ -1,7 +1,7 @@
 <template>
     <WorkflowParameterBase class="galaxy-workflow-parameter-dataset" v-bind="{...$attrs, ...$props}" :validation_message="validation_message">
         <HistoryContents ref="history_contents"
-                         v-bind:historyPromise="historyPromise"
+                         v-bind:history="history"
                          v-bind:value="value"
                          v-bind:filter="datasetFilter"
                          v-bind:accepted_upload_types="format"
@@ -18,6 +18,7 @@
 <script>
     import HistoryContents from "../../histories/HistoryContents";
     import WorkflowParameterBase from "../WorkflowParameterBase";
+    import {History} from "../../api/histories";
 
     /**
      * Workflow dataset/collection parameter
@@ -52,10 +53,10 @@
             },
 
             /**
-             * Asynchronously loaded history model
+             * History model
              */
-            historyPromise: {
-                type: Promise,
+            history: {
+                validator(prop) {return prop instanceof History || prop === null},
                 required: true,
             },
 

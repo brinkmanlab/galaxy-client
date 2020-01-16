@@ -10,7 +10,7 @@
                no-gutters
         >
             <WorkflowParameter v-bind="input"
-                               v-bind:historyPromise="historyPromise"
+                               v-bind:history="history"
                                @input="onInput"
                                no-body
                                ref="params"
@@ -19,7 +19,7 @@
         </b-row>
 
         <!-- Workflow Steps -->
-        <b-row no-gutters class="galaxy-workflow-parameters-steps">
+        <b-row no-gutters class="galaxy-workflow-parameters-steps" v-if="workflow">
             <b-card no-body>
                 <b-card-header header-tag="header" role="tab">
                     <b-button block href="#" v-b-toggle="`${_uid}-step-parameters`" variant="info">Step Parameters</b-button>
@@ -49,31 +49,29 @@
 </template>
 
 <script>
+    import {History} from "../api/histories";
+    import {StoredWorkflow} from "../api/workflows";
+
     export default {
         name: "WorkflowParameters",
         components: {WorkflowParameter: ()=>import("./WorkflowParameter")},
         props: {
-            workflowPromise: {
-                type: Promise,
+            workflow: {
+                validator(prop) {return prop instanceof StoredWorkflow || prop === null},
                 required: true,
             },
-            historyPromise: {
-                type: Promise,
+            history: {
+                validator(prop) {return prop instanceof History || prop === null},
                 required: true,
             },
         },
         data() {return {
             inputs: {},
         }},
-        asyncComputed: {
-            workflow: {
-                get() { return this.workflowPromise },
-                default: {inputs: [], steps: []},
-            },
-        },
         computed: {
             workflow_inputs() {
                 let inputs = [];
+                if (!this.workflow) return inputs;
                 for (const [index, input] of Object.entries(this.workflow.inputs)) {
                     const param = {index: index, uuid: input.uuid, label: input.label, type: this.workflow.steps[index].type, annotation: '', optional: false, order: 0};
                     if (this.workflow.steps[index].annotation) {
@@ -100,11 +98,12 @@
         },
         methods: {
             annotation(index) {
-                if (this.workflow.steps)
+                if (this.workflow && this.workflow.steps)
                     return this.workflow.steps[index].annotation || '';
                 return '';
             },
             onInput(value) {
+                if (!this.workflow) throw("Workflow not ready");
                 for (const [index, input] of Object.entries(value)) {
                     if (input && input.subinput) {
                         // TODO remove when Galaxy optional workflow inputs implemented

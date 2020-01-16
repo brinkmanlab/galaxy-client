@@ -60,8 +60,8 @@
                 type: Boolean,
                 default: false,
             },
-            historyPromise: {
-                type: Promise,
+            history: {
+                validator(prop) {return prop instanceof History || prop === null},
                 required: true,
                 //TODO default: History.getRecent(),
             },
