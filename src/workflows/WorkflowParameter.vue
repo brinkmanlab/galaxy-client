@@ -25,6 +25,7 @@
     import DatasetParameter from "./WorkFlowParameters/DatasetParameter";
     import DBKeyParameter from "./WorkFlowParameters/DBKeyParameter";
     import SimpleParameter from "./WorkFlowParameters/SimpleParameter";
+    import {History} from "../api/histories";
 
     // TODO See https://vuejs.org/v2/guide/components-edge-cases.html#Dependency-Injection for better? alternative of superset of props
 
