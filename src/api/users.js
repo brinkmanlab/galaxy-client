@@ -82,16 +82,23 @@ class User extends Common.Model {
      */
     static async getAPIKey(username, password, method = 'baseauth') {
         let response;
-        switch (method) {
-            case 'baseauth':
-                response = await this.api().get('/api/authenticate/baseauth', {
-                    auth: {username, password},
-                    save: false,
-                });
-                return response.response.data.api_key;
-            default:
-                // TODO When Galaxy adds more API authentication methods, implement here
-                throw Error(method + ' authentication method not implemented');
+        try {
+            switch (method) {
+                case 'baseauth':
+                    response = await this.api().get('/api/authenticate/baseauth', {
+                        auth: {username, password},
+                        save: false,
+                    });
+                    return response.response.data.api_key;
+                default:
+                    // TODO When Galaxy adds more API authentication methods, implement here
+                    throw Error(method + ' authentication method not implemented');
+            }
+        } catch (error) {
+            // Galaxy returns 404 when user does not exist
+            if (error.response && error.response.status === 404) return '';
+            // Retry request for all other errors after delay
+            await new Promise(r => setTimeout(r, 1000));
         }
     }
 
