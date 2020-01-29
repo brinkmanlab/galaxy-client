@@ -41,7 +41,7 @@ class User extends Common.Model {
      * @returns {Promise<User|null>}
      */
     static async getCurrent() {
-        let response = await this.request('get', {url: this.constructor.build_url() + "current"});
+        let response = await this.request('get', {url: this.build_url() + "current"});
         return response.entities[this.entity][0];
     }
 
