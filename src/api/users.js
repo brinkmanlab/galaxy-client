@@ -40,8 +40,8 @@ class User extends Common.Model {
      * This requires that a api key was already registered with axios for the request.
      * @returns {Promise<User|null>}
      */
-    static async getCurrent() {
-        let response = await this.request('get', {url: this.build_url() + "current"});
+    static async getCurrent(config={}) {
+        let response = await this.request('get', {url: this.build_url() + "current", ...config});
         return response.entities[this.entity][0];
     }
 
