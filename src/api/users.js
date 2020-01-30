@@ -28,7 +28,7 @@ class User extends Common.Model {
             deleted: this.boolean(false),
             purged: this.boolean(false),
             nice_total_disk_usage: this.string("None"),
-            quota: this.string("unlimited"),
+            quota: this.number(0),
             email: this.string(null).nullable(),
             is_admin: this.boolean(false),
             tags_used: this.attr([]),

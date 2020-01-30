@@ -5,6 +5,7 @@ import * as genomes from './genomes'
 import * as histories from './histories'
 import * as misc from './misc'
 import * as workflows from './workflows'
+import * as users from './users'
 
 export {
     api,
@@ -13,6 +14,7 @@ export {
     histories,
     misc,
     workflows,
+    users,
 }
 
 export default {
