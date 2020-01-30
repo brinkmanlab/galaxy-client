@@ -37,7 +37,7 @@
         </b-row>
 
         <!-- Loading Spinner -->
-        <div v-if="workflow_inputs.length === 0" class="text-center">
+        <div v-if="workflow_inputs.length === 0" class="text-center loading-spinner">
             <b-spinner class="align-middle"></b-spinner>
             <strong>Loading...</strong>
         </div>
@@ -173,4 +173,11 @@
         display: none; /* Hide empty slots */
     }
 
+    .loading-spinner {
+        margin: 1em;
+    }
+
+    .loading-spinner strong {
+        padding-left: 1em;
+    }
 </style>

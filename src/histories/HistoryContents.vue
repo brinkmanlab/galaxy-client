@@ -61,7 +61,7 @@
                     </b-card>
                 </template-->
                 <template slot="table-busy">
-                    <div class="text-center">
+                    <div class="text-center loading-spinner">
                         <b-spinner class="align-middle"></b-spinner>
                         <strong>Loading...</strong>
                     </div>
@@ -332,5 +332,13 @@
     >>> .row:first-child .galaxy-function i {
         font-size: 1.5rem;
         padding-left: 0.5vw;
+    }
+
+    >>> .loading-spinner {
+        margin: 1em;
+    }
+
+    >>> .loading-spinner strong {
+        padding-left: 1em;
     }
 </style>
