@@ -119,6 +119,15 @@ class History extends Common.Model {
         }*/
         this.constructor.update({where: this[this.constructor.primaryKey], data: {contentsFetched: true}});
     }
+
+    static apiConfig = {
+        dataTransformer(response) {
+            if (response.config.method === 'post') {
+                response.data['contentsFetched'] = true; // New histories don't have contents
+            }
+            return response.data
+        }
+    };
 }
 
 /*class HistoryExport extends Common.Model { //TODO
