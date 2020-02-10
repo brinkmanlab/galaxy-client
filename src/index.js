@@ -28,5 +28,5 @@ export default {
         VuexORM.install(database, {namespace: 'galaxy'})(options.store)
         // https://vuejs.org/v2/guide/components-registration.html
         //Vue.component("", );
-    }
+    },
 };
