@@ -124,16 +124,26 @@
                             };
                         }
 
-                        const subindex = this.inputs[index].element_identifiers.findIndex(i=>i.name === input.subinput);
+                        const subindex = this.inputs[index].element_identifiers.findIndex(i=>i && i.name === input.subinput);
                         if (Object.entries(input).length === 1) {
                             // Null selection from DatasetParameter
                             if (subindex !== -1) delete this.inputs[index].element_identifiers[subindex];
                             if (this.inputs[index].element_identifiers.length === 0 || this.inputs[index].element_identifiers.every(i=>i === undefined)) delete this.inputs[index];
                         } else {
                             // Add/Update subinput
+                            const name = input.subinput
                             delete input.subinput;
-                            if (subindex !== -1) this.inputs[index].element_identifiers[subindex] = input;
-                            else this.inputs[index].element_identifiers.push(input);
+                            var inp = input;
+                            if (input.src !== "hdca" && input.src !== "new_collection") {
+                              inp = {
+                                src: 'new_collection',
+                                collection_type: 'list',
+                                name: name,
+                                element_identifiers: [input]
+                              }
+                            }
+                            if (subindex !== -1) this.inputs[index].element_identifiers[subindex] = inp;
+                            else this.inputs[index].element_identifiers.push(inp);
                         }
                     } else if (input === null) {
                         delete this.inputs[index];
