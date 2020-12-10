@@ -76,20 +76,12 @@
                     const param = {index: index, uuid: input.uuid, label: input.label, type: this.workflow.steps[index].type, annotation: '', optional: false, order: 0};
                     if (this.workflow.steps[index].annotation) {
                         // TODO Temporary until https://github.com/galaxyproject/galaxy/issues/7496
-                        // TODO Temporary until galaxy has native support for optional workflow inputs
                         try {
                             // Unescape entities
                             const txt = document.createElement("textarea");
                             txt.innerHTML = this.workflow.steps[index].annotation;
                             const annotation = txt.value;
                             Object.assign(param, JSON.parse(annotation));
-                            if (param.subinputs && param.subinputs.length) {
-                                let i = 0;
-                                for (; i < param.subinputs.length - 1; ++i) {
-                                    inputs.push({...param, ...param.subinputs[i]});
-                                }
-                                Object.assign(param, param.subinputs[i]);
-                            }
                         } catch (e) {
                             if (!(e instanceof SyntaxError)) throw e;
                         }
@@ -112,40 +104,7 @@
             onInput(value) {
                 if (!this.workflow) throw("Workflow not ready");
                 for (const [index, input] of Object.entries(value)) {
-                    if (input && input.subinput) {
-                        // TODO remove when Galaxy optional workflow inputs implemented
-                        // nest subinput under input for later processing
-                        if (!this.inputs[index]) {
-                            this.inputs[index] = {
-                                src: 'new_collection',
-                                collection_type: 'list',
-                                name: this.workflow.inputs[index].label,
-                                element_identifiers: []
-                            };
-                        }
-
-                        const subindex = this.inputs[index].element_identifiers.findIndex(i=>i && i.name === input.subinput);
-                        if (Object.entries(input).length === 1) {
-                            // Null selection from DatasetParameter
-                            if (subindex !== -1) delete this.inputs[index].element_identifiers[subindex];
-                            if (this.inputs[index].element_identifiers.length === 0 || this.inputs[index].element_identifiers.every(i=>i === undefined)) delete this.inputs[index];
-                        } else {
-                            // Add/Update subinput
-                            const name = input.subinput
-                            delete input.subinput;
-                            var inp = input;
-                            if (input.src !== "hdca" && input.src !== "new_collection") {
-                              inp = {
-                                src: 'new_collection',
-                                collection_type: 'list',
-                                name: name,
-                                element_identifiers: [input]
-                              }
-                            }
-                            if (subindex !== -1) this.inputs[index].element_identifiers[subindex] = inp;
-                            else this.inputs[index].element_identifiers.push(inp);
-                        }
-                    } else if (input === null) {
+                    if (input === null) {
                         delete this.inputs[index];
                     } else {
                         this.inputs[index] = input;

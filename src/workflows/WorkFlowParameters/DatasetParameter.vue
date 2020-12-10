@@ -143,16 +143,9 @@
                     };
                 } else {
                     this.selection = models[0].toInput();
-                    this.selection.name = models[0].name; // TODO only needed until optional inputs
                 }
 
                 let message = this.selection;
-                if (!message && this.$attrs.id) {
-                    // TODO remove when optional inputs available
-                    message = {subinput: this.$attrs.id};
-                } else {
-                    message.subinput = this.$attrs.id;
-                }
                 this.$emit('input', message);
             },
             setCustomValidity(message){
