@@ -73,19 +73,24 @@
                 let inputs = [];
                 if (!this.workflow) return inputs;
                 for (const [index, input] of Object.entries(this.workflow.inputs)) {
-                    const param = {index: index, uuid: input.uuid, label: input.label, type: this.workflow.steps[index].type, annotation: '', optional: false, order: 0};
+                    const param = {index: index, uuid: input.uuid, label: input.label, type: this.workflow.steps[index].type, annotation: this.workflow.steps[index].annotation, order: 0};
+                    Object.assign(param, this.workflow.steps[index].tool_inputs);
                     if (this.workflow.steps[index].annotation) {
                         // TODO Temporary until https://github.com/galaxyproject/galaxy/issues/7496
                         try {
                             // Unescape entities
                             const txt = document.createElement("textarea");
-                            txt.innerHTML = this.workflow.steps[index].annotation;
+                            txt.innerHTML = param.annotation;
                             const annotation = txt.value;
-                            Object.assign(param, JSON.parse(annotation));
+                            const overrides = JSON.parse(annotation);
+                            // annotation included json, but not necessarily an annotation value. Do not show json.
+                            param.annotation = '';
+                            Object.assign(param, overrides);
                         } catch (e) {
                             if (!(e instanceof SyntaxError)) throw e;
                         }
                     }
+                    if (param.default) param.value = param.default; // Handle default value of simple inputs
                     inputs.push(param);
                 }
                 inputs = inputs.sort((a,b)=>(a.order || 0) - (b.order || 0)).map(input=>{
