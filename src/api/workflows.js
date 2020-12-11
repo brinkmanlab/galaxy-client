@@ -39,10 +39,12 @@ class WorkflowInvocationStep extends Common.Model {
             model_class: this.string("WorkflowInvocationStep"),
             workflow_step_id: this.string(null).nullable(),
             workflow_invocation_id: this.string(null),
+            subworkflow_invocation_id: this.string(null),
 
             //ORM only
             //workflow_step: this.belongsTo(StoredWorkflowStep, 'workflow_step_id') //TODO create model
-            invocation: this.belongsTo(WorkflowInvocation, 'workflow_invocation_id') //TODO no backreference
+            invocation: this.belongsTo(WorkflowInvocation, 'workflow_invocation_id'), //TODO no backreference
+            subinvocation: this.belongsTo(WorkflowInvocation, 'subworkflow_invocation_id'), //TODO no backreference
         }
     }
 
@@ -51,6 +53,7 @@ class WorkflowInvocationStep extends Common.Model {
      * @returns {Object<Number>} Mapping of {state name: count, ...}
      */
     states() {
+        // TODO subworkflow state
         if (!this.jobs || !this.jobs.length) this.jobs = Job.query().where('workflow_invocation_step_id', this.id).get();
         if (!this.jobs || !this.jobs.length) {
             return {[this.state]: 1};
@@ -82,6 +85,7 @@ class WorkflowInvocationStep extends Common.Model {
     async get_error_log() {
         let log = '';
         //if (this.state !== 'error') return log;
+        // TODO subworkflow logs
         for (const job of this.jobs) {
             log += await job.get_error_log(this.workflow_step_label);
         }
