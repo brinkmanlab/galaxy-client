@@ -123,7 +123,7 @@
                     this.selection = {
                         src: 'new_collection',
                         collection_type: 'list',
-                        name: this.$attrs.id, // TODO id is provided by input annotation JSON
+                        name: this.label,
                         element_identifiers: models.reduce((acc, model) => {
                             // Convert model to input object
                             let result = model.toInput();
