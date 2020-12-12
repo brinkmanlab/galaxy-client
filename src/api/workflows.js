@@ -336,6 +336,9 @@ class StoredWorkflow extends Common.Model {
         // Backfill label if not provided
         if (label === undefined) label = this.name;
 
+        // Deal with https://github.com/galaxyproject/galaxy/issues/10899
+        for (const key in Object.keys(this.inputs)) if (!(key in inputs)) inputs[key] = null;
+
         // Create a new history if not provided
         if (history === undefined) {
             //Create history to store run
@@ -355,7 +358,7 @@ class StoredWorkflow extends Common.Model {
         // Create new collections before invocation
         // TODO test if 'new_collection' as src will autogenerate a collection upon invocation
         for (const [index, input] of Object.entries(inputs)) {
-            if (input.src === 'new_collection') {
+            if (input && input.src === 'new_collection') {
                 //Create collection of inputs in new history
                 try {
                     response = await HistoryDatasetAssociation.post(history, {data: {
