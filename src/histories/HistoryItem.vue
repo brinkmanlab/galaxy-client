@@ -69,7 +69,7 @@
             }
         },
         mounted() {
-            if (this.model.hid > 0) {
+            if (this.model.hid > this.model.constructor.ghost_hid) {
                 const self = this;
                 self.model.poll_state(()=>{
                     // When state === ok the extension is not updated immediately

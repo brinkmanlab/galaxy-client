@@ -47,7 +47,7 @@
                     <DatasetItem
                             v-if="row.value.history_content_type==='dataset'"
                             v-bind:model="row.value"
-                            v-bind:class="{'table-danger': row.value.hid === -1}"
+                            v-bind:class="{'table-danger': row.value.state in row.value.constructor.error_states}"
                     />
                     <CollectionItem
                             v-else-if="row.value.history_content_type==='dataset_collection'"
@@ -154,7 +154,7 @@
                 return this.history.datasets
                     .concat(this.history.collections)
                     .filter(item=>!item.deleted && this.filter(item)) //TODO make deleted optional, needs ui control
-                    .sort((a,b)=>(a.hid === 0)?-1:b.hid-a.hid)
+                    .sort((a,b)=>(a.hid === a.constructor.ghost_hid)?-1:b.hid-a.hid)
                     .reduce((acc, cur)=>{acc.push({item: cur, hid: cur.hid, key: cur.id}); return acc;}, []);
             },
 
@@ -186,7 +186,7 @@
             row_selected(items) {
                 this.$emit('input', items.map(item=>item.item));
             },
-            
+
             /**
              * Find next match in items, highlight and scroll to row
              * @param reverse {Boolean} Search backwards
@@ -201,14 +201,14 @@
                  if (index < 0) index = reverse ? 0 : this.items.length-1;
                  else if (index >= this.items.length) index = reverse ? 0 : this.items.length-1;
                  const start_index = index;
-                 
+
                  // Iterate until next match
                  do {
                      const item = this.items[index].item;
                      if (search_match(this.search, item)) {
                          // Match found
                          this.search_target = item;
-                         
+
                          // Scroll to new target
                          const tbody = this.$refs.table.$el.querySelector('tbody');
                          const row = tbody.querySelectorAll('tr')[this.items.length - index -1];
@@ -216,12 +216,12 @@
                          return;
                      }
                      index += step;
-                     
+
                      // Wrap in appropriate direction
                      if (index < 0) index = this.items.length-1;
                      else if (index >= this.items.length) index = 0;
                  } while (index !== start_index); // Don't wrap past start_index
-                 
+
                  // No next match found
                  this.search_target = null;
              },
@@ -246,9 +246,10 @@
                                 id: tmp_id,
                                 file: file,
                                 name: "Incorrect file format: " + file.name,
-                                hid: -1,
+                                hid: HistoryDatasetAssociation.ghost_hid,
                                 history_id: this.history.id,
                                 extension: this.accepted_upload_types[0],
+                                state: "failed"
                             }
                         });
                     } else {

@@ -20,7 +20,7 @@
             </template>
             <template v-slot:functions>
                 <slot name="functions" v-bind="self" />
-                <ErrorInfo v-if="states.error" v-bind:item="self" v-on="$listeners"/>
+                <ErrorInfo v-if="model.state === 'failed' || states.error" v-bind:item="self" v-on="$listeners"/>
             </template>
         </History>
     </div>

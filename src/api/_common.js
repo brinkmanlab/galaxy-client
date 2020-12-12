@@ -153,10 +153,7 @@ class Model extends VuexModel {
 
         //Delete locally first
         const result = this.constructor.delete(this[this.constructor.primaryKey]);
-        if (this.hid === -1) {
-            //If ghost item, return
-            return result;
-        }
+        if (options.local_only) return result;
 
         return this.request('delete', options);
     }

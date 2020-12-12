@@ -7,10 +7,17 @@ import * as Common from "./_common";
 import { History } from './histories';
 
 class HistoryAssociation extends Common.Model {
+    static end_states = ['ok', 'error', 'paused', 'failed'];
+    static error_states = ['error', 'failed'];
+    static ready_states = ['ok', 'queued'];
+    static ghost_hid = 0;
+
     constructor(...args) {
         super(...args);
         // Add HasState mixin
-        Object.assign(this, Common.HasState);
+        for (const key of Object.keys(Common.HasState)) {
+            if (!(key in this)) this[key] = Common.HasState[key];
+        }
     }
 
     static fields() {
@@ -69,6 +76,10 @@ class HistoryAssociation extends Common.Model {
      */
     async delete(options = {}) {
         this.deleted = true; // TODO is this necessary any more?
+        if (this.hid === this.constructor.ghost_hid) {
+            //If ghost item, delete local only
+            options.local_only = true;
+        }
         return super.delete(options);
     }
 
@@ -99,8 +110,6 @@ class HistoryAssociation extends Common.Model {
 class HistoryDatasetAssociation extends HistoryAssociation {
     static entity = 'HistoryDatasetAssociation';
     static primaryKey = 'id';
-    static end_states = ['ok', 'error', 'paused', 'failed'];
-    static ready_states = ['ok', 'queued'];
     static apiPath = 'contents/datasets/';
     static srcName = 'hda';
 
@@ -135,7 +144,7 @@ class HistoryDatasetAssociation extends HistoryAssociation {
             meta_files: this.attr([]),
             genome_build: this.string('?'),
             metadata_sequences: this.number(0),
-            hid: this.number(0),
+            hid: this.number(this.ghost_hid),
             model_class: this.string('HistoryDatasetAssociation'),
             metadata_data_lines: this.number(0),
             annotation: this.string(null).nullable(),
@@ -194,7 +203,7 @@ class HistoryDatasetAssociation extends HistoryAssociation {
                 id: tmp_id,
                 file: file,
                 name: file.name,
-                hid: 0,
+                hid: this.ghost_hid,
                 history_id: history_id,
                 upload_progress: 0,
                 state: "uploading",
@@ -265,7 +274,7 @@ class HistoryDatasetAssociation extends HistoryAssociation {
         } catch (e) {
             HistoryDatasetAssociation.update({
                 where: tmp_id,
-                data: { name: 'Failed to upload ' + file.name }
+                data: { name: 'Failed to upload ' + file.name, state: "failed" }
             });
             throw e;
         } finally {
@@ -309,6 +318,15 @@ class HistoryDatasetCollectionAssociation extends HistoryAssociation {
             //ORM only
             history: this.belongsTo(History, 'history_id'),
         }
+    }
+
+    /**
+     * Poll model state until it is an end_state
+     * @param callback Called when state changes to end_state, return true to stop polling, false to continue
+     * @param extra Additional parameters passed to Model.start_polling()
+     */
+    poll_state(callback = ()=>true, ...extra) {
+        this.poll_state_callback(x=>x.populated_state, callback, ...extra);
     }
 }
 
