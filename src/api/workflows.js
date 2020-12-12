@@ -229,13 +229,14 @@ class WorkflowInvocation extends Common.Model {
     async getOutputs() {
         const history = this.history || await History.findOrLoad(this.history_id);
         let result = {};
-        if (this.outputs) {
-            for (let key of Object.keys(this.outputs)) {
-                const elem = await srcMap[this.outputs[key].src].findOrLoad(this.outputs[key].id, history);
-                if (elem) {
-                    result[key] = elem;
-                    elem.poll_state();
-                }
+        let all_outputs = {};
+        if (this.outputs) all_outputs = Object.assign(all_outputs, this.outputs);
+        if (this.output_collections) all_outputs = Object.assign(all_outputs, this.output_collections);
+        for (const key of Object.keys(all_outputs)) {
+            const elem = await srcMap[all_outputs[key].src].findOrLoad(all_outputs[key].id, history);
+            if (elem) {
+                result[key] = elem;
+                elem.poll_state();
             }
         }
         return result;

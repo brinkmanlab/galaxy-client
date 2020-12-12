@@ -2,6 +2,7 @@
  * Code responsible for interacting with /api/history_contents
  * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.history_contents
  */
+import download from 'downloadjs'
 import * as Common from "./_common";
 import { History } from './histories';
 
@@ -77,6 +78,21 @@ class HistoryAssociation extends Common.Model {
      */
     toInput() {
         return {id: this.id, src: this.constructor.srcName};
+    }
+
+    /**
+     * Download data to client
+     * @param url_xform optional function to modify URL before making request. Defaults to identity function "x=>x".
+     */
+    download(url_xform) {
+        if (typeof url_xform !== 'function') url_xform = x=>x
+        if (this.download_url) {
+            // HDA
+            download(url_xform(this.download_url), `${this.name}.${this.extension}`);
+        } else {
+            // HDCA
+            download(url_xform(`${this.build_url()}/download`));
+        }
     }
 }
 
