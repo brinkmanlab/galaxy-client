@@ -42,6 +42,8 @@ const HasState = {
                 }
                 return false;
             }, ...extra);
+        } else {
+            callback();
         }
     },
 };
