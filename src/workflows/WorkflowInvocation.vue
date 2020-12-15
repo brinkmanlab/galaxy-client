@@ -83,10 +83,10 @@
             },
             done() {
                 const models = Object.values(this.outputs);
-                return models.length > 0 && models.every(o => o.state === 'ok');
+                return models.length > 0 && models.every(o => o.state === 'ok' || o.populated_state === 'ok');
             },
             outputs() {
-                return Object.entries(this.model.outputs).reduce((acc, [key, output])=>{
+                return Object.entries(this.model.all_outputs()).reduce((acc, [key, output])=>{
                     const found = srcMap[output.src].find(output.id);
                     if (found) acc[key] = found;
                     return acc;

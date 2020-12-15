@@ -239,12 +239,18 @@ class WorkflowInvocation extends Common.Model {
         return log;
     }
 
-    async getOutputs() {
-        const history = this.history || await History.findOrLoad(this.history_id);
-        let result = {};
+    all_outputs() {
         let all_outputs = {};
         if (this.outputs) all_outputs = Object.assign(all_outputs, this.outputs);
         if (this.output_collections) all_outputs = Object.assign(all_outputs, this.output_collections);
+        return all_outputs;
+    }
+
+    async getOutputs() {
+        const history = this.history || await History.findOrLoad(this.history_id);
+        let result = {};
+        const all_outputs = this.all_outputs();
+
         for (const key of Object.keys(all_outputs)) {
             const elem = await srcMap[all_outputs[key].src].findOrLoad(all_outputs[key].id, history);
             if (elem) {

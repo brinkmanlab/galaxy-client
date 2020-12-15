@@ -8,13 +8,11 @@
 </template>
 
 <script>
-import {WorkflowInvocation} from "../api/workflows";
 
 export default {
   name: "WorkflowInvocationOutputDownload",
   props: {
-    model: {
-      type: WorkflowInvocation,
+    outputs: {
       required: true,
     },
     url_xform: {
@@ -22,14 +20,6 @@ export default {
       default: x=>x
     }
   },
-  asyncComputed: {
-    outputs: {
-      async get() {
-        return this.model.getOutputs();
-      },
-      default: {}
-    }
-  }
 }
 </script>
 
