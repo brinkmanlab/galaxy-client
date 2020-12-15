@@ -88,7 +88,7 @@ class Job extends Common.Model {
                     if (hda.state === 'error') {
                         log += `${label} on ${input_identifier} - ${key}: ${hda.misc_info}\n`;
                         // TODO move to Dataset model
-                        const response = await this.constructor.get('/datasets/' + hda.id + '/stderr', {responseType: 'text', save: false});
+                        const response = await this.request('get', {url: '/datasets/' + hda.id + '/stderr', responseType: 'text', save: false});
                         if (response.data) log += response.data + '\n';
                     }
                     break;
