@@ -38,8 +38,8 @@ class WorkflowInvocationStep extends Common.Model {
             action: this.string(null).nullable(),
             model_class: this.string("WorkflowInvocationStep"),
             workflow_step_id: this.string(null).nullable(),
-            workflow_invocation_id: this.string(null),
-            subworkflow_invocation_id: this.string(null),
+            workflow_invocation_id: this.string(""),
+            subworkflow_invocation_id: this.string(null).nullable(),
 
             //ORM only
             //workflow_step: this.belongsTo(StoredWorkflowStep, 'workflow_step_id') //TODO create model
@@ -85,7 +85,17 @@ class WorkflowInvocationStep extends Common.Model {
     async get_error_log() {
         let log = '';
         //if (this.state !== 'error') return log;
-        // TODO subworkflow logs
+        if (!this.invocation) this.invocation = WorkflowInvocation.find(this.workflow_invocation_id);
+        if (this.subworkflow_invocation_id) {
+            const subworkflow = await WorkflowInvocation.findOrLoad(this.subworkflow_invocation_id, {
+                url: `/api/invocations/${this.subworkflow_invocation_id}/`,
+                params: {view: "element", step_details: true, history_id: this.invocation.history_id}
+            });
+            log += await subworkflow.get_error_log();
+        }
+        if (!this.jobs || !this.jobs.length) {
+            this.jobs = Job.query().where('workflow_invocation_step_id', this.id).get();
+        }
         for (const job of this.jobs) {
             log += await job.get_error_log(this.workflow_step_label);
         }
@@ -220,6 +230,9 @@ class WorkflowInvocation extends Common.Model {
     async get_error_log() {
         let log = '';
         //if (this.state !== 'error') return log;
+        if (!this.steps || !this.steps.length) {
+            this.steps = WorkflowInvocationStep.query().where('workflow_invocation_id', this.id).with('jobs|invocation').get();
+        }
         for (const step of this.steps) {
             log += await step.get_error_log();
         }
