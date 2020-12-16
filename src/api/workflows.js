@@ -435,6 +435,21 @@ class StoredWorkflow extends Common.Model {
         this.constructor.update({where: this[this.constructor.primaryKey], data: {invocationsFetched: true}});
         return result;
     }
+
+    //Vuex ORM Axios Config
+    static apiConfig = {
+        dataTransformer(response) {
+            // TODO BANDAID to deal with https://github.com/galaxyproject/galaxy/issues/10900
+            if (response.data.hasOwnProperty('steps') && response.data.hasOwnProperty('inputs')) {
+                Object.keys(response.data.inputs).forEach(i => {
+                    const param = response.data.steps[i].tool_inputs;
+                    if (typeof param.format === 'string') param.format = param.format.split(',').map(x => x.trim());
+                });
+            }
+
+            return response.data;
+        }
+    }
 }
 
 const Module = {

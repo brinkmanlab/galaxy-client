@@ -90,7 +90,7 @@
                             if (!(e instanceof SyntaxError)) throw e;
                         }
                     }
-                    if (typeof param.format === 'string') param.format = param.format.split(',').map(x=>x.trim()); // Deal with https://github.com/galaxyproject/galaxy/issues/10900
+
                     if (param.default) param.value = param.default; // Handle default value of simple inputs
                     inputs.push(param);
                 }
