@@ -2,9 +2,10 @@
  * Code responsible for interacting with /api/history_contents
  * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.history_contents
  */
-import download from 'downloadjs'
 import * as Common from "./_common";
 import { History } from './histories';
+
+const anchor = document.createElement("a"); // Global anchor used for download() below
 
 class HistoryAssociation extends Common.Model {
     static end_states = ['ok', 'error', 'paused', 'failed'];
@@ -96,14 +97,24 @@ class HistoryAssociation extends Common.Model {
      * @param url_xform optional function to modify URL before making request. Defaults to identity function "x=>x".
      */
     download(url_xform) {
-        if (typeof url_xform !== 'function') url_xform = x=>x
+        if (typeof url_xform !== 'function') url_xform = x=>x;
+        let url;
         if (this.download_url) {
             // HDA
-            download(url_xform(this.download_url), `${this.name}.${this.extension}`);
+            url = url_xform(this.download_url);
+            anchor.setAttribute("download", `${this.name}.${this.extension}`);
         } else {
             // HDCA
-            download(url_xform(`${this.build_url()}/download`));
+            url = url_xform(`${this.build_url()}/download`);
+            anchor.setAttribute("download", "");
         }
+        anchor.href = url;
+        anchor.style.display = "none";
+        //document.body.appendChild(anchor);
+        //setTimeout(function() {
+            anchor.click();
+            //document.body.removeChild(anchor);
+        //}, 66);
     }
 }
 
