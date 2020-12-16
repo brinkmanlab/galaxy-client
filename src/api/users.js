@@ -112,8 +112,8 @@ class User extends Common.Model {
         for (let i = 0; i < 40; ++i) { // Retry 40 times (20 seconds)
             try {
                 await this.api().get('/api/whoami', {
-                    params: {
-                        key,
+                    headers: {
+                        "X-API-KEY": key,
                     },
                     save: false,
                 });
