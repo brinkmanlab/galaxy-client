@@ -18,7 +18,7 @@
   "dependencies": {
     "@vuex-orm/core": "^0.34.1",
     "@vuex-orm/plugin-axios": "^0.9.2",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "byte-size": "^6.2.0",
     "lodash.merge": "^4.6.2"
   },
