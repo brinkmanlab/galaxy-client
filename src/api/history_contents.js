@@ -101,7 +101,7 @@ class HistoryAssociation extends Common.Model {
         let url;
         if (this.download_url) {
             // HDA
-            url = url_xform(this.download_url);
+            url = url_xform(`${this.download_url}?to_ext=${this.extension}&filename_pattern=${this.name}.${this.extension}`);
             anchor.setAttribute("download", `${this.name}.${this.extension}`);
         } else {
             // HDCA
