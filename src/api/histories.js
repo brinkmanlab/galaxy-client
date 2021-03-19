@@ -102,6 +102,36 @@ class History extends Common.Model {
             return await HistoryDatasetAssociation.upload(file, this.id, file_type);
     }
 
+    /**
+     * Copy hda, hdca, ldda, ldca into history
+     * @param content {{id: string, src: 'hda'|'hdca'|'ldda'|'ldca'} | HistoryDatasetAssociation | HistoryDatasetCollectionAssociation}
+     * @param deep {boolean} Copy collection elements with collection
+     * @param options {object} Options to pass to post()
+     * @return {Promise<HistoryDatasetAssociation | HistoryDatasetCollectionAssociation>}
+     */
+    async copy_into(content, deep = false, options = {}) {
+        const id = content.id;
+        let source, type;
+        if (content instanceof HistoryDatasetAssociation || content instanceof HistoryDatasetCollectionAssociation) source = content.constructor.srcName;
+        else source = content.src;
+        // TODO is 'ldda' and 'ldca' correct?
+        switch (source) {
+            case 'ldda':
+                source = 'library';
+                //fallthrough
+            case 'hda':
+                type = HistoryDatasetAssociation;
+                break;
+            case 'ldca':
+                source = 'library_folder';
+                //fallthrough
+            case 'hdca':
+                type = HistoryDatasetCollectionAssociation;
+                break;
+        }
+        return type.post(this, {data: { source, content: id, copy_elements: deep }, ...options});
+    }
+
     static async fetch(options = {}) {
         return super.fetch({params: {view: 'detailed', ...options.params}, ...options})
     }
