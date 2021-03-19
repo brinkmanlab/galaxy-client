@@ -17,7 +17,7 @@
             <input type="file" hidden multiple
                    ref="upload"
                    v-bind:accept="accepted_upload_types.map(ext=>'.'+ext)"
-                   @input.prevent="uploadHandler"
+                   @input.prevent="dragdrop"
             />
         </b-row>
 
@@ -39,7 +39,7 @@
                      thead-class="hidden_header"
                      :tbody-tr-class="rowClass"
                      @row-selected="row_selected"
-                     @dragstart.native.stop.prevent @dragover.native.prevent="upload_dragging=true" @dragleave.native="upload_dragging=false" @dragexit.native="upload_dragging=false" @drop.native.prevent="uploadHandler"
+                     @dragstart.native.stop.prevent @dragover.native.prevent="upload_dragging=true" @dragleave.native="upload_dragging=false" @dragexit.native="upload_dragging=false" @drop.native.prevent="dragdrop"
                      ref="table"
                      @keydown.native="handle_hotkey"
             >
@@ -48,10 +48,14 @@
                             v-if="row.value.history_content_type==='dataset'"
                             v-bind:model="row.value"
                             v-bind:class="{'table-danger': row.value.state in row.value.constructor.error_states}"
+                            draggable="true"
+                            @dragstart="dragstart($event, row.value)"
                     />
                     <CollectionItem
                             v-else-if="row.value.history_content_type==='dataset_collection'"
                             v-bind:model="row.value"
+                            draggable="true"
+                            @dragstart="dragstart($event, row.value)"
                     />
                 </template>
 
@@ -82,6 +86,8 @@
     const temporary_extension_to_datatype_map = {
         "genbank": "genbank", "gbk": "genbank", "embl": "embl", "gbff": "genbank", "newick": "newick", "nwk": "newick"
     };
+
+    const HISTCONTENT_MIME = 'application/vnd.galaxy.historycontent+json';
 
     /**
      * Match criteria for searchbox
@@ -235,8 +241,31 @@
              },
 
             /**
+             * Handle hda, or hdca dragging
+             * @param {DragEvent} browser event
+             * @param {HistoryDatasetAssociation | HistoryDatasetCollectionAssociation} item to copy to other history
+             */
+            dragstart(evt, item) {
+               evt.dataTransfer.setData(HISTCONTENT_MIME, JSON.stringify({hist_id: this.history.id, ...item.toInput()}));
+               evt.dataTransfer.effectAllowed = (item instanceof HistoryDatasetAssociation) ? 'move' : 'copyMove'; // copy = deep, move == shallow
+            },
+
+            /**
+             * Handle drop events
+             * @param {DragEvent} browser event
+             */
+            dragdrop(evt) {
+              if (!evt.dataTransfer || !evt.dataTransfer.types.includes(HISTCONTENT_MIME)) return this.uploadHandler(evt);
+              if (evt.dataTransfer) {
+                const content = JSON.parse(evt.dataTransfer.getData(HISTCONTENT_MIME));
+                if (this.history.id !== content.hist_id)
+                  this.history.copy_into(content, evt.dataTransfer.dropEffect === 'copy');
+              }
+            },
+
+            /**
              * Handle upload events
-             * @param {Event} The browser event
+             * @param {DragEvent} browser event
              */
             uploadHandler(evt) {
                 this.upload_dragging=false;
