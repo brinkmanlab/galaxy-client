@@ -31,7 +31,7 @@
                      primary-key="key"
                      :items="items"
                      :busy="isLoading"
-                     selectable
+                     :selectable="selectable"
                      select-mode="range"
                      :fields="['item']"
                      sort-by="hid"
@@ -136,6 +136,14 @@
             accepted_upload_types: {
                 type: Array,
                 default() { return [] },
+            },
+
+            /**
+             * Contents are selectable. 'input' events will be emitted when the selection changes
+             */
+            selectable: {
+              type: Boolean,
+              default() { return false },
             }
         },
         data() {return{
