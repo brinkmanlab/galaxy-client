@@ -265,19 +265,27 @@
                     }
                 }
 
-                // Hand off upload event to parent for further processing
+                // Hand off upload event to parent for further processing if listening
                 const self = this;
-                this.$emit('upload', {
+                const skip_sniff = ()=>{
+                  for (const file of accepted_files) {
+                    // TODO handle specifying extension elsewhere
+                    // TODO hardcoded extension mapping to avoid sniff for now
+                    let ext = file.name.match(/[^.]+$/);
+                    if (ext && temporary_extension_to_datatype_map.hasOwnProperty(ext[0])) self.history.fileUpload(file, temporary_extension_to_datatype_map[ext[0]]);
+                    else self.history.fileUpload(file);
+                  }
+                };
+
+                if ('upload' in this.$listeners) {
+                  this.$emit('upload', {
                     history: this.history,
                     files: accepted_files,
-                    default() { for (const file of accepted_files) {
-                        // TODO handle specifying extension elsewhere
-                        // TODO hardcoded extension mapping to avoid sniff for now
-                        let ext = file.name.match(/[^.]+$/);
-                        if (ext && temporary_extension_to_datatype_map.hasOwnProperty(ext[0])) self.history.fileUpload(file, temporary_extension_to_datatype_map[ext[0]]);
-                        else self.history.fileUpload(file);
-                    }},
-                });
+                    default: skip_sniff,
+                  });
+                } else {
+                  skip_sniff();
+                }
             },
 
             /**
