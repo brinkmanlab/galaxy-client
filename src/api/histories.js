@@ -136,6 +136,9 @@ class History extends Common.Model {
         return super.fetch({params: {view: 'detailed', ...options.params}, ...options})
     }
 
+    // TODO GET /api/histories/{history_id}/contents/near/{hid}/{limit}
+    // https://docs.galaxyproject.org/en/latest/lib/galaxy.webapps.galaxy.api.html#galaxy.webapps.galaxy.api.history_contents.HistoryContentsController.contents_near
+
     async loadContents() {
         if (this.datasets.length === 0) {
             await galaxy.history_contents.HistoryDatasetAssociation.fetch(this);
