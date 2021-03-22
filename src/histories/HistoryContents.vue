@@ -113,7 +113,7 @@
              * History model
              */
             history: {
-                type: History,
+                validator(prop) {return prop instanceof History || prop === null},
                 required: true,
             },
 
