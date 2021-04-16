@@ -208,34 +208,35 @@
              search_next(reverse = false) {
                  const step = reverse ? 1 : -1; // 0 is at bottom
 
-                let index = this.items.findIndex(item=>item.item === this.search_target);
+                 let index = this.items.findIndex(item=>item.item === this.search_target);
 
-                 // Ensure current index is not more than one step from items bounds and wrap if needed
-                 index += step;
-                 if (index < 0) index = reverse ? 0 : this.items.length-1;
-                 else if (index >= this.items.length) index = reverse ? 0 : this.items.length-1;
-                 const start_index = index;
-
-                 // Iterate until next match
-                 do {
-                     const item = this.items[index].item;
-                     if (search_match(this.search, item)) {
-                         // Match found
-                         this.search_target = item;
-
-                         // Scroll to new target
-                         const tbody = this.$refs.table.$el.querySelector('tbody');
-                         const row = tbody.querySelectorAll('tr')[this.items.length - index -1];
-                         row.scrollIntoView();
-                         return;
-                     }
+                 if (index !== -1) {
+                     // Ensure current index is not more than one step from items bounds and wrap if needed
                      index += step;
+                     if (index < 0) index = reverse ? 0 : this.items.length - 1;
+                     else if (index >= this.items.length) index = reverse ? 0 : this.items.length - 1;
+                     const start_index = index;
 
-                     // Wrap in appropriate direction
-                     if (index < 0) index = this.items.length-1;
-                     else if (index >= this.items.length) index = 0;
-                 } while (index !== start_index); // Don't wrap past start_index
+                     // Iterate until next match
+                     do {
+                         const item = this.items[index].item;
+                         if (search_match(this.search, item)) {
+                             // Match found
+                             this.search_target = item;
 
+                             // Scroll to new target
+                             const tbody = this.$refs.table.$el.querySelector('tbody');
+                             const row = tbody.querySelectorAll('tr')[this.items.length - index - 1];
+                             row.scrollIntoView();
+                             return;
+                         }
+                         index += step;
+
+                         // Wrap in appropriate direction
+                         if (index < 0) index = this.items.length - 1;
+                         else if (index >= this.items.length) index = 0;
+                     } while (index !== start_index); // Don't wrap past start_index
+                 }
                  // No next match found
                  this.search_target = null;
              },
