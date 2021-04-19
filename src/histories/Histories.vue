@@ -1,11 +1,11 @@
 <template>
     <b-card class="galaxy-histories" no-body>
         <b-card-header>
-            <b-nav tabs @mousemove="scroll" ref="tabs">
+            <b-nav tabs @mousemove="scroll" @wheel.prevent.stop="wheel" ref="tabs" title="Ctrl-click tabs to show multiple. Drag to scroll.">
                 <b-nav-item v-for="item of items" :key="item.model.id" :active="item.active"
-                            @mousedown="mousestart=$event.clientX"
+                            @mousedown.prevent="mousestart=$event.clientX"
                             @mouseup="activate($event, item)"
-                            title="Ctrl-click tabs to show multiple. Drag to scroll.">
+                            >
                     <slot name="tab" :item="item" :model="item.model">
                         {{ item.model.name }}
                     </slot>
@@ -59,6 +59,11 @@ export default {
         scroll(evt) {
             if (evt.buttons === 1)
                 this.$refs.tabs.scrollLeft -= evt.movementX;
+        },
+        wheel(evt) {
+            const delta1 = Math.max(evt.deltaX, evt.deltaY, evt.deltaZ);
+            const delta2 = Math.min(evt.deltaX, evt.deltaY, evt.deltaZ);
+            this.$refs.tabs.scrollLeft -= (Math.abs(delta1) > Math.abs(delta2) ? delta1 : delta2) * 4;
         }
     },
     computed: {
@@ -110,6 +115,10 @@ export default {
     -moz-user-drag: none;
     -o-user-drag: none;
     user-select: none;
+}
+
+.galaxy-histories >>> .options {
+    min-width: max-content;  /* Firefox only */
 }
 
 .galaxy-histories >>> .options > button {
