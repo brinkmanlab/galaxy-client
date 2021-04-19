@@ -63,7 +63,7 @@ export default {
         wheel(evt) {
             const delta1 = Math.max(evt.deltaX, evt.deltaY, evt.deltaZ);
             const delta2 = Math.min(evt.deltaX, evt.deltaY, evt.deltaZ);
-            this.$refs.tabs.scrollLeft -= (Math.abs(delta1) > Math.abs(delta2) ? delta1 : delta2) * 4;
+            this.$refs.tabs.scrollLeft += (Math.abs(delta1) > Math.abs(delta2) ? delta1 : delta2) * 4;
         }
     },
     computed: {
