@@ -1,7 +1,7 @@
 <template>
     <b-card class="galaxy-histories" no-body>
         <b-card-header>
-            <b-nav tabs @mousemove="scroll" @wheel.prevent.stop="wheel" ref="tabs" title="Ctrl-click tabs to show multiple. Drag to scroll.">
+            <b-nav tabs @mousemove="scroll" @wheel.prevent.stop="wheel" ref="tabs" title="Ctrl-click (⌘ for mac) tabs to show multiple. Drag to scroll.">
                 <b-nav-item v-for="item of items" :key="item.model.id" :active="item.active"
                             @mousedown.prevent="mousestart=$event.clientX"
                             @mouseup="activate($event, item)"
