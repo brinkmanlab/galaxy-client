@@ -148,6 +148,10 @@
         display: none; /* Hide empty slots */
     }
 
+    >>> .galaxy-history-contents-list {
+        min-height: 10rem;
+    }
+
     .loading-spinner {
         margin: 1em;
     }

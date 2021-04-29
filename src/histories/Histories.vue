@@ -153,7 +153,7 @@ export default {
     display: grid;
     border-left: 1px solid rgba(223, 215, 202, 0.75);
     grid-template-columns: auto auto;
-    grid-template-rows: min-content min-content min-content auto;
+    grid-template-rows: min-content min-content auto;
     grid-template-areas:
         "name functions"
         "updated updated"
