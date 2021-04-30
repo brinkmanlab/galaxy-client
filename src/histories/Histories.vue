@@ -22,7 +22,10 @@
             </b-dropdown>
         </b-card-header>
         <b-card-body>
-            <slot name="default" :models="active_models" />
+            <!-- Extra div required because flex align-items: stretch calculates _visible_ height of parent. Overflow: scroll messes with that -->
+            <div class="galaxy-histories-contents">
+                <slot name="default" :models="active_models" />
+            </div>
         </b-card-body>
     </b-card>
 </template>
@@ -138,12 +141,15 @@ export default {
 }
 
 .galaxy-histories >>> .card-body {
+    overflow: scroll;
+    padding: 0.5ch 0 0;
+}
+
+.galaxy-histories >>> .galaxy-histories-contents {
     display: flex;
     flex-flow: row nowrap;
-    overflow-x: scroll;
     justify-content: flex-start;
     align-items: stretch;
-    padding: 0.5ch 0 0;
 }
 
 .galaxy-histories >>> .galaxy-history {
@@ -187,6 +193,10 @@ export default {
 
 .galaxy-histories >>> .galaxy-history .galaxy-history-contents {
     grid-area: content;
+}
+
+.galaxy-histories >>> .galaxy-history .galaxy-history-contents-list {
+    height: 100%;
 }
 
 </style>
