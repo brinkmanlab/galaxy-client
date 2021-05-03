@@ -56,7 +56,7 @@ export default {
     methods: {
         activate(evt, item) {
             if (Math.abs(evt.clientX - this.mousestart) > 4) return;
-            if (!evt.ctrlKey) this.items.forEach(i => this.$set(i, 'active', false));
+            if (!(evt.ctrlKey || evt.metaKey)) this.items.forEach(i => this.$set(i, 'active', false));
             this.$set(item, 'active', true);
         },
         scroll(evt) {
