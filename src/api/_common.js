@@ -106,7 +106,7 @@ class Model extends VuexModel {
         return this.constructor.request.call(this, method, config);
     }
 
-    static async post(data, options) {
+    static async post(data = {}, options = {}) {
         const response = await this.request("post", {data, ...options});
 
         if (response.entities) {

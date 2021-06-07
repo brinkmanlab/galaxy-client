@@ -3,7 +3,10 @@
  * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.workflows
  */
 import * as Common from "./_common";
-import { HistoryDatasetAssociation, /*HistoryDatasetCollectionAssociation,*/ srcMap } from "./history_contents";
+import {
+    HistoryDatasetCollectionAssociation,
+    srcMap
+} from "./history_contents";
 import { History } from "./histories";
 import { Job } from "./jobs";
 
@@ -420,7 +423,7 @@ class StoredWorkflow extends Common.Model {
             if (input && input.src === 'new_collection') {
                 //Create collection of inputs in new history
                 try {
-                    response = await HistoryDatasetAssociation.post(history, {data: {
+                    response = await HistoryDatasetCollectionAssociation.post(history, {data: {
                         name: input.name,
                         type: 'dataset_collection',
                         collection_type: this.steps[index].tool_inputs.collection_type,

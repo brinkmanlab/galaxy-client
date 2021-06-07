@@ -6,7 +6,7 @@
                       @upload="onUpload"
                       ref="param"
     />
-    <!-- Reference Genome -->
+    <!-- Reference Genome TODO temporary until https://github.com/galaxyproject/galaxy/issues/11681 -->
     <DBKeyParameter v-else-if="type === 'dbkey_input'"
                     v-bind="{...$attrs, ...$props}"
                     @input="onInput"

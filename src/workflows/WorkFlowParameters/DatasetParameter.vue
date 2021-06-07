@@ -1,10 +1,11 @@
 <template>
     <WorkflowParameterBase class="galaxy-workflow-parameter-dataset" v-bind="{...$attrs, ...$props}" :validation_message="validation_message">
         <HistoryContents ref="history_contents"
-                         v-bind:history="history"
-                         v-bind:value="value"
-                         v-bind:filter="datasetFilter"
-                         v-bind:accepted_upload_types="format"
+                         :history="history"
+                         :value="value"
+                         :filter="datasetFilter"
+                         :accepted_upload_types="format"
+                         :selectable="true"
                          @input="onInput"
                          @upload="upload=>this.$emit('upload', upload)"
         />
