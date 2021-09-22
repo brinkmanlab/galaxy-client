@@ -5,7 +5,6 @@
  */
 import * as Common from "./_common";
 import {History} from "./histories";
-import {HistoryDatasetAssociation} from "./history_contents";
 
 /**
  * Model representing a invocation of a tool
