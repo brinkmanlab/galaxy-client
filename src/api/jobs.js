@@ -26,10 +26,19 @@ class Job extends Common.Model {
             exit_code: this.number().nullable(),
             state:	this.string().nullable(), // ‘new’, ‘upload’, ‘waiting’, ‘queued’, ‘running’, ‘ok’, ‘error’, ‘paused’, ‘deleted’, ‘deleted_new’
             create_time: this.string().nullable(),
+            galaxy_version: this.string(),
+            command_version: this.string(),
             model_class: this.string("Job"),
             inputs: this.attr(),
             outputs: this.attr(),
             params: this.attr(),
+            tool_stdout: this.string(),
+            tool_stderr: this.string(),
+            job_stdout: this.string(),
+            job_stderr: this.string(),
+            stderr: this.string(),
+            stdout: this.string(),
+            job_messages: this.attr(),
 
             //ORM Only
             history: this.belongsTo(History, 'history_id'),
@@ -56,52 +65,17 @@ class Job extends Common.Model {
      */
     async get_error_log(label) {
         let self = this;
-        if (self.state !== 'error') return '';
+        if (this.state !== 'error') return '';
 
         // Fetch complete job state
-        if (!self.inputs || !self.outputs) {
-            await self.reload();
+        if (!self.stderr) {
+            await self.reload({params:{full: true}});
             self = self.constructor.find(self.id);
         }
 
-        // Fetch assocated history
-        if (!self.history) {
-            self.history = await History.findOrLoad(self.history_id);
-        }
-
-        let log = '';
         label = label || self.tool_id;
 
-        // Resolve input identifiers
-        let input_identifier = Object.keys(self.inputs)
-                .filter(key => self.params.hasOwnProperty(`${key}|__identifier__`))
-                .map(key => self.params[`${key}|__identifier__`]);
-        if (input_identifier.length === 1) input_identifier = input_identifier[0];
-        else if (input_identifier.length > 1) input_identifier = `[${input_identifier.join(', ')}]`;
-        else input_identifier = '';
-
-        // Iterate job outputs and concatenate logs
-        for (const [key, val] of Object.entries(self.outputs)) {
-            switch (val.src) {
-                case 'hda': {
-                    const hda = await HistoryDatasetAssociation.findOrLoad(val.id, self.history);
-                    if (hda.state === 'error') {
-                        log += `${label} on ${input_identifier} - ${key}: ${hda.misc_info}\n`;
-                        // TODO move to Dataset model
-                        const response = await this.request('get', {url: '/datasets/' + hda.id + '/stderr', responseType: 'text', save: false});
-                        if (response.data) log += response.data + '\n';
-                    }
-                    break;
-                }
-                case 'hdca': {
-                    // TODO
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
-        return log;
+        return `${label}: ${self.stderr}\n`
     }
 }
 
