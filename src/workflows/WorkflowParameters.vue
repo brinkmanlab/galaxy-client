@@ -76,7 +76,7 @@
                     const param = {index: index, uuid: input.uuid, label: input.label, type: this.workflow.steps[index].type, annotation: this.workflow.steps[index].annotation, order: 0};
                     Object.assign(param, this.workflow.steps[index].tool_inputs);
                     if (this.workflow.steps[index].annotation) {
-                        // TODO Temporary until https://github.com/galaxyproject/galaxy/issues/7496
+                        // TODO Temporary until https://github.com/galaxyproject/galaxy/issues/10895
                         try {
                             // Unescape entities
                             const txt = document.createElement("textarea");
@@ -146,6 +146,10 @@
 <style scoped>
     .row:empty {
         display: none; /* Hide empty slots */
+    }
+
+    >>> .galaxy-history-contents-list {
+        min-height: 10rem;
     }
 
     .loading-spinner {

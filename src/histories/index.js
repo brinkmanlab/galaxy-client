@@ -1,5 +1,6 @@
 export const History = import(/* webpackChunkName: "History" */"./History");
 export const HistoryContents = import(/* webpackChunkName: "HistoryContents" */"./HistoryContents");
+export const Histories = import(/* webpackChunkName: "HistoryContents" */"./Histories");
 export const HistoryFunctions = import(/* webpackChunkName: "HistoryFunctions" */"./HistoryFunctions");
 export const HistoryItem = import(/* webpackChunkName: "HistoryItem" */"./HistoryItem");
 export const HistoryItemFunctions = import(/* webpackChunkName: "HistoryItemFunctions" */"./HistoryItemFunctions");

@@ -1,5 +1,5 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
-    <b-container class="galaxy-history-item">
+    <b-container class="galaxy-history-item" :draggable="draggable" @dragstart.passive="dragstart">
         <slot name="before"/>
         <span class="galaxy-history-item-hid">{{ model.hid }}</span>
         <EditableLabel class="galaxy-history-item-name" @update="update_label" v-bind:value="model.name" placeholder="Enter a name to identify this dataset" ref="label"></EditableLabel>
@@ -26,6 +26,8 @@
     import HistoryItemFunctions from "./HistoryItemFunctions";
     import EditableLabel from "../misc/EditableLabel";
 
+    export const HISTCONTENT_MIME = 'application/vnd.galaxy.historycontent+json';
+
     /**
      * Base component for history items
      */
@@ -38,6 +40,14 @@
         data: ()=>{return{
         }},
         props: {
+            /**
+             * Allow item to be dragged
+             */
+            draggable: {
+                type: Boolean,
+                default: false
+            },
+
             /**
              * Model of history item
              */
@@ -66,7 +76,16 @@
             update_label(value) {
                 this.model.name = value;
                 this.model.put(['name']);
-            }
+            },
+
+            /**
+             * Handle hda, or hdca dragging
+             * @param {DragEvent} browser event
+             */
+            dragstart(evt) {
+                evt.dataTransfer.setData(HISTCONTENT_MIME, JSON.stringify({hist_id: this.model.history_id, ...this.model.toInput()}));
+                evt.dataTransfer.effectAllowed = (this.model instanceof HistoryDatasetAssociation) ? 'move' : 'copyMove'; // copy = deep, move == shallow
+            },
         },
         mounted() {
             if (this.model.hid > this.model.constructor.ghost_hid) {
@@ -89,6 +108,7 @@
         flex-direction: row;
         align-items: center;
         width: 100%;
+        user-select: none;
     }
 
     .galaxy-history-item >>> .galaxy-history-item-functions {

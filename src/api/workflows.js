@@ -3,7 +3,10 @@
  * https://docs.galaxyproject.org/en/latest/api/api.html#module-galaxy.webapps.galaxy.api.workflows
  */
 import * as Common from "./_common";
-import { HistoryDatasetAssociation, /*HistoryDatasetCollectionAssociation,*/ srcMap } from "./history_contents";
+import {
+    HistoryDatasetCollectionAssociation,
+    srcMap
+} from "./history_contents";
 import { History } from "./histories";
 import { Job } from "./jobs";
 
@@ -188,11 +191,50 @@ class WorkflowInvocation extends Common.Model {
         }
     }
 
+    //TODO add support for /api/invocation/<id>/step_jobs_summary
+    /*
+    0
+    id	"d158a6cce97e3331"
+    populated_state	"ok"
+    model	"ImplicitCollectionJobs"
+    states
+    error	4
+    1
+    id	"c55cc6ad09407e92"
+    populated_state	"ok"
+    model	"ImplicitCollectionJobs"
+    states
+    paused	4
+    2
+    id	"43cee75e648fc2b4"
+    populated_state	"ok"
+    model	"ImplicitCollectionJobs"
+    states
+    paused	4
+    3
+    id	"41454a2d6e8db7f3"
+    populated_state	"ok"
+    model	"ImplicitCollectionJobs"
+    states
+    paused	4
+     */
+
     /**
      * Count the number of states in steps
      * @returns {Object<Number>} Mapping of state name to count
      */
     states() {
+        //TODO use /api/invocation/<id>/jobs_summary
+        /*
+        id	"bdbb49fafe32786f"
+        model	"WorkflowInvocation"
+        states
+        ok	3
+        error	5
+        paused	20
+        populated_state	"ok"
+         */
+
         if (!this.steps || !this.steps.length) {
             this.steps = WorkflowInvocationStep.query().where('workflow_invocation_id', this.id).get();
         }
@@ -381,7 +423,7 @@ class StoredWorkflow extends Common.Model {
             if (input && input.src === 'new_collection') {
                 //Create collection of inputs in new history
                 try {
-                    response = await HistoryDatasetAssociation.post(history, {data: {
+                    response = await HistoryDatasetCollectionAssociation.post(history, {data: {
                         name: input.name,
                         type: 'dataset_collection',
                         collection_type: this.steps[index].tool_inputs.collection_type,
