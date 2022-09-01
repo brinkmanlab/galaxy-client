@@ -126,7 +126,7 @@ class WorkflowInvocation extends Common.Model {
     static entity = 'WorkflowInvocation';
     static primaryKey = 'id';
     static end_states = ["cancelled", "error", "done", "failed"];
-    static apiPath = 'invocations/';
+    static apiPath = '/api/invocations/';
 
     constructor(...args) {
         super(...args);
@@ -164,12 +164,8 @@ class WorkflowInvocation extends Common.Model {
         return `${StoredWorkflow.build_url()}${this.workflow_id}/invocations/${this.id}/`
     }
 
-    static build_url() {
-        throw("WorkflowInvocation url is relative to workflow, must call on a model instance");
-    }
-
-    static async fetch(workflow, options) {
-        const response = await this.request('get', {url: `${workflow.build_url()}${this.apiPath}`, ...options});
+    static async fetch_workflow(workflow, options) {
+        const response = await this.request('get', {url: `${workflow.build_url()}invocations/`, ...options});
         if (response.entities) {
             return response.entities[this.entity];
         }
@@ -465,7 +461,7 @@ class StoredWorkflow extends Common.Model {
         if (histories) {
             // Fetch each invocation individually by history id
             result = (await Promise.all(histories.map(history => {
-                return WorkflowInvocation.fetch(this, {
+                return WorkflowInvocation.fetch_workflow(this, {
                     params: {view: "element", step_details: true, history_id: history.id}
                 })
             }))).flat();
