@@ -173,7 +173,7 @@ class WorkflowInvocation extends Common.Model {
     }
 
     static async post(workflow, data, options) {
-        const response = await this.request('post', {url: `${workflow.build_url()}${this.apiPath}`, data, ...options});
+        const response = await this.request('post', {url: `${workflow.build_url()}invocations/`, data, ...options});
         return response.entities[this.entity][0];
     }
 
